@@ -7,6 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Save, Printer, UserPlus, Edit } from 'lucide-react';
 import BuyerDialog from './BuyerDialog';
+import { useInvoice, Invoice, initialInvoiceState } from '@/context/InvoiceContext';
+import { 
+  generateIRN, 
+  generateAckNo, 
+  generateInvoiceNumber, 
+  calculateTaxes, 
+  numberToWords 
+} from '@/utils/helpers';
+import { v4 as uuidv4 } from 'uuid';
+import { BUYERS, PRESET_ITEMS, Buyer } from '@/constants/billing';
 import { 
   Select,
   SelectContent,

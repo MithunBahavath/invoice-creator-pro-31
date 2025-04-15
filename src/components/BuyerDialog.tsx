@@ -10,8 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { BUYERS } from '@/constants/billing';
-import type { Buyer } from '@/constants/billing';
+import { Buyer } from '@/constants/billing';
 
 interface BuyerDialogProps {
   isOpen: boolean;
