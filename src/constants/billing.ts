@@ -1,4 +1,3 @@
-
 export interface Buyer {
   name: string;
   address: string;
@@ -13,7 +12,7 @@ export interface PresetItem {
   defaultRate: number;
 }
 
-export const BUYERS: Buyer[] = [
+export let BUYERS: Buyer[] = [
   {
     name: "Sample Customer 1",
     address: "123 Main Street, City, State - 612001",

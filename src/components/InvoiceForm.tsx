@@ -5,29 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Save, Printer } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
+import { Plus, Trash2, Save, Printer, UserPlus, Edit } from 'lucide-react';
+import BuyerDialog from './BuyerDialog';
 import { 
-  Invoice, 
-  InvoiceItem, 
-  useInvoice, 
-  initialInvoiceState 
-} from '@/context/InvoiceContext';
-import { 
-  numberToWords, 
-  calculateTaxes, 
-  generateIRN, 
-  generateAckNo, 
-  generateInvoiceNumber 
-} from '@/utils/helpers';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BUYERS, PRESET_ITEMS } from '@/constants/billing';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface InvoiceFormProps {
   onPrintClick: () => void;
@@ -36,6 +28,9 @@ interface InvoiceFormProps {
 const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
   const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice } = useInvoice();
   const [isNewInvoice, setIsNewInvoice] = useState(true);
+  const [showBuyerDialog, setShowBuyerDialog] = useState(false);
+  const [editingBuyer, setEditingBuyer] = useState<Buyer | null>(null);
+  const [buyers, setBuyers] = useState(BUYERS);
   
   const { register, control, handleSubmit, watch, setValue, getValues } = useForm<Invoice>({
     defaultValues: currentInvoice || initialInvoiceState,
@@ -147,6 +142,25 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
     });
   };
   
+  const handleAddBuyer = (buyer: Buyer) => {
+    setBuyers([...buyers, buyer]);
+    setValue('buyerName', buyer.name);
+    setValue('buyerAddress', buyer.address);
+    setValue('buyerGstin', buyer.gstin);
+    setValue('buyerState', buyer.state);
+    setValue('buyerStateCode', buyer.stateCode);
+  };
+
+  const handleEditBuyer = (buyer: Buyer) => {
+    setBuyers(buyers.map(b => b.name === editingBuyer?.name ? buyer : b));
+    setValue('buyerName', buyer.name);
+    setValue('buyerAddress', buyer.address);
+    setValue('buyerGstin', buyer.gstin);
+    setValue('buyerState', buyer.state);
+    setValue('buyerStateCode', buyer.stateCode);
+    setEditingBuyer(null);
+  };
+
   const onSubmit = (data: Invoice) => {
     if (isNewInvoice) {
       addInvoice(data);
@@ -201,22 +215,55 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
         
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-lg font-semibold mb-4">Buyer Information</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Buyer Information</h2>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setEditingBuyer(null);
+                  setShowBuyerDialog(true);
+                }}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Buyer
+              </Button>
+            </div>
             <div className="space-y-4">
-              <div>
-                <Label>Select Customer</Label>
-                <Select onValueChange={handleBuyerSelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BUYERS.map((buyer, index) => (
-                      <SelectItem key={index} value={index.toString()}>
-                        {buyer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label>Select Customer</Label>
+                  <Select onValueChange={handleBuyerSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {buyers.map((buyer, index) => (
+                        <SelectItem key={index} value={index.toString()}>
+                          {buyer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="mb-[2px]"
+                  onClick={() => {
+                    const selectedBuyer = buyers.find((_, index) => 
+                      index.toString() === getValues('buyerName')
+                    );
+                    if (selectedBuyer) {
+                      setEditingBuyer(selectedBuyer);
+                      setShowBuyerDialog(true);
+                    }
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </div>
               
               <div>
@@ -644,6 +691,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
           <Printer className="mr-2 h-4 w-4" /> Print/Download
         </Button>
       </div>
+      
+      <BuyerDialog
+        isOpen={showBuyerDialog}
+        onClose={() => {
+          setShowBuyerDialog(false);
+          setEditingBuyer(null);
+        }}
+        onSave={editingBuyer ? handleEditBuyer : handleAddBuyer}
+        editingBuyer={editingBuyer}
+      />
     </form>
   );
 };
