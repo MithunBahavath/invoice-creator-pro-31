@@ -20,6 +20,14 @@ import {
   generateAckNo, 
   generateInvoiceNumber 
 } from '@/utils/helpers';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BUYERS, PRESET_ITEMS } from '@/constants/billing';
 
 interface InvoiceFormProps {
   onPrintClick: () => void;
@@ -40,7 +48,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
   
   const watchItems = watch('items');
   
-  // Generate IRN and other details when creating a new invoice
   useEffect(() => {
     if (isNewInvoice) {
       const currentDate = new Date();
@@ -53,24 +60,20 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
       setValue('invoiceDate', dateStr);
       setValue('ewbGeneratedDate', `${dateStr} ${currentDate.getHours()}:${currentDate.getMinutes()} ${currentDate.getHours() >= 12 ? 'PM' : 'AM'}`);
       
-      // Calculate valid until date (3 days from now)
       const validUntil = new Date(currentDate);
       validUntil.setDate(validUntil.getDate() + 3);
       setValue('ewbValidUpto', `${validUntil.toISOString().split('T')[0]} ${validUntil.getHours()}:${validUntil.getMinutes()} ${validUntil.getHours() >= 12 ? 'PM' : 'AM'}`);
     }
   }, [isNewInvoice, setValue]);
   
-  // Calculate totals whenever items change
   useEffect(() => {
     if (watchItems) {
-      // Calculate the total taxable amount
       const totalTaxableAmount = watchItems.reduce((sum, item) => {
         return sum + (parseFloat(item?.amount?.toString() || '0') || 0);
       }, 0);
       
       setValue('totalTaxableAmount', totalTaxableAmount);
       
-      // Calculate tax amounts
       const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
       const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
       
@@ -85,12 +88,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
       setValue('roundedOff', roundedOff);
       setValue('totalAmount', totalAmount);
       
-      // Set amount in words
       setValue('amountInWords', numberToWords(totalAmount));
     }
   }, [watchItems, setValue, getValues]);
   
-  // Add a new item row
   const addItem = () => {
     const newItemIndex = fields.length + 1;
     append({
@@ -105,7 +106,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
     });
   };
   
-  // Calculate item amount when quantity or rate changes
   const calculateItemAmount = (index: number) => {
     const item = getValues(`items.${index}`);
     if (item) {
@@ -115,12 +115,36 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
       const amount = quantity * ratePerItem;
       setValue(`items.${index}.amount`, amount);
       
-      // Update rate including tax
       const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
       const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
       const taxRate = 1 + ((cgstRate + sgstRate) / 100);
       setValue(`items.${index}.rateIncTax`, ratePerItem * taxRate);
     }
+  };
+  
+  const handleBuyerSelect = (buyerId: string) => {
+    const selectedBuyer = BUYERS.find((buyer, index) => index.toString() === buyerId);
+    if (selectedBuyer) {
+      setValue('buyerName', selectedBuyer.name);
+      setValue('buyerAddress', selectedBuyer.address);
+      setValue('buyerGstin', selectedBuyer.gstin);
+      setValue('buyerState', selectedBuyer.state);
+      setValue('buyerStateCode', selectedBuyer.stateCode);
+    }
+  };
+  
+  const addPresetItem = (preset: typeof PRESET_ITEMS[0]) => {
+    const newItemIndex = fields.length + 1;
+    append({
+      id: uuidv4(),
+      slNo: newItemIndex,
+      description: preset.description,
+      hsnSac: preset.hsnSac,
+      quantity: 1,
+      ratePerItem: preset.defaultRate,
+      rateIncTax: 0,
+      amount: preset.defaultRate
+    });
   };
   
   const onSubmit = (data: Invoice) => {
@@ -130,7 +154,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
       updateInvoice(data);
     }
     
-    // Update the current invoice in context
     setCurrentInvoice(data);
   };
   
@@ -181,23 +204,39 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
             <h2 className="text-lg font-semibold mb-4">Buyer Information</h2>
             <div className="space-y-4">
               <div>
+                <Label>Select Customer</Label>
+                <Select onValueChange={handleBuyerSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BUYERS.map((buyer, index) => (
+                      <SelectItem key={index} value={index.toString()}>
+                        {buyer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
                 <Label htmlFor="buyerName">Company Name</Label>
-                <Input id="buyerName" {...register('buyerName')} required />
+                <Input id="buyerName" {...register('buyerName')} readOnly />
               </div>
               
               <div>
                 <Label htmlFor="buyerAddress">Address</Label>
-                <Textarea id="buyerAddress" {...register('buyerAddress')} required />
+                <Textarea id="buyerAddress" {...register('buyerAddress')} readOnly />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="buyerGstin">GSTIN/UIN</Label>
-                  <Input id="buyerGstin" {...register('buyerGstin')} required />
+                  <Input id="buyerGstin" {...register('buyerGstin')} readOnly />
                 </div>
                 <div>
                   <Label htmlFor="buyerState">State</Label>
-                  <Input id="buyerState" {...register('buyerState')} />
+                  <Input id="buyerState" {...register('buyerState')} readOnly />
                 </div>
               </div>
             </div>
@@ -266,9 +305,27 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Items</h2>
-            <Button type="button" onClick={addItem} variant="outline" size="sm">
-              <Plus className="mr-1 h-4 w-4" /> Add Item
-            </Button>
+            <div className="flex gap-2">
+              <Select onValueChange={(value) => {
+                const preset = PRESET_ITEMS[parseInt(value)];
+                if (preset) addPresetItem(preset);
+              }}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Add preset item" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRESET_ITEMS.map((item, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {item.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Button type="button" onClick={addItem} variant="outline" size="sm">
+                <Plus className="mr-1 h-4 w-4" /> Add Custom Item
+              </Button>
+            </div>
           </div>
           
           <div className="overflow-x-auto">
@@ -410,7 +467,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                         {...field}
                         onChange={(e) => {
                           field.onChange(parseFloat(e.target.value) || 0);
-                          // Recalculate for all items
                           watchItems?.forEach((_, index) => {
                             calculateItemAmount(index);
                           });
@@ -445,7 +501,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                         {...field}
                         onChange={(e) => {
                           field.onChange(parseFloat(e.target.value) || 0);
-                          // Recalculate for all items
                           watchItems?.forEach((_, index) => {
                             calculateItemAmount(index);
                           });
