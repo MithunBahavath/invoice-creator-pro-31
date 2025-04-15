@@ -11,6 +11,12 @@ interface InvoicePrintProps {
 const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
   const { currentInvoice } = useInvoice();
 
+  // Helper function to safely format numbers
+  const safeNumberFormat = (value: any, decimals = 2): string => {
+    const num = parseFloat(value);
+    return isNaN(num) ? '0.00' : num.toFixed(decimals);
+  };
+
   return (
     <div 
       ref={forwardRef} 
@@ -152,14 +158,14 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
             </thead>
             <tbody>
               {currentInvoice.items.map((item, index) => (
-                <tr key={item.id} className="border-b border-gray-800 print:border-gray-800">
+                <tr key={`item-${item.id || index}`} className="border-b border-gray-800 print:border-gray-800">
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.slNo}</td>
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.description}</td>
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.hsnSac}</td>
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.quantity} Nos</td>
-                  <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{item.rateIncTax.toFixed(2)}</td>
-                  <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{item.ratePerItem.toFixed(2)}</td>
-                  <td className="p-2 text-right">{item.amount.toFixed(2)}</td>
+                  <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{safeNumberFormat(item.rateIncTax)}</td>
+                  <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{safeNumberFormat(item.ratePerItem)}</td>
+                  <td className="p-2 text-right">{safeNumberFormat(item.amount)}</td>
                 </tr>
               ))}
 
@@ -180,11 +186,11 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
               <tr className="border-b border-gray-800 print:border-gray-800">
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold" colSpan={3}>Total</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800">
-                  {currentInvoice.items.reduce((sum, item) => sum + item.quantity, 0)} Nos
+                  {currentInvoice.items.reduce((sum, item) => sum + (item?.quantity || 0), 0)} Nos
                 </td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800"></td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800"></td>
-                <td className="p-2 text-right font-bold">₹ {currentInvoice.totalTaxableAmount.toFixed(2)}</td>
+                <td className="p-2 text-right font-bold">₹ {safeNumberFormat(currentInvoice.totalTaxableAmount)}</td>
               </tr>
 
               {/* Tax Calculation Rows */}
@@ -195,9 +201,9 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
                   <div className="font-bold">Rounded Off</div>
                 </td>
                 <td colSpan={4} className="p-2 text-right">
-                  <div>{currentInvoice.cgstAmount.toFixed(2)}</div>
-                  <div>{currentInvoice.sgstAmount.toFixed(2)}</div>
-                  <div>({Math.abs(currentInvoice.roundedOff).toFixed(2)})</div>
+                  <div>{safeNumberFormat(currentInvoice.cgstAmount)}</div>
+                  <div>{safeNumberFormat(currentInvoice.sgstAmount)}</div>
+                  <div>({Math.abs(parseFloat(currentInvoice.roundedOff?.toString() || '0')).toFixed(2)})</div>
                 </td>
               </tr>
             </tbody>
@@ -236,32 +242,32 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
                 new Set(currentInvoice.items.map(item => item.hsnSac))
               ).map((hsn, index) => {
                 const itemsWithHsn = currentInvoice.items.filter(item => item.hsnSac === hsn);
-                const taxableValue = itemsWithHsn.reduce((sum, item) => sum + item.amount, 0);
-                const cgstAmount = (taxableValue * currentInvoice.cgstRate) / 100;
-                const sgstAmount = (taxableValue * currentInvoice.sgstRate) / 100;
+                const taxableValue = itemsWithHsn.reduce((sum, item) => sum + (parseFloat(item.amount?.toString() || '0') || 0), 0);
+                const cgstAmount = (taxableValue * parseFloat(currentInvoice.cgstRate?.toString() || '0')) / 100;
+                const sgstAmount = (taxableValue * parseFloat(currentInvoice.sgstRate?.toString() || '0')) / 100;
                 const totalTax = cgstAmount + sgstAmount;
                 
                 return (
-                  <tr key={index} className="border-b border-gray-800 print:border-gray-800">
+                  <tr key={`hsn-${index}`} className="border-b border-gray-800 print:border-gray-800">
                     <td className="p-2 border-r border-gray-800 print:border-gray-800">{hsn}</td>
-                    <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{taxableValue.toFixed(2)}</td>
+                    <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{safeNumberFormat(taxableValue)}</td>
                     <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{currentInvoice.cgstRate}%</td>
-                    <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{cgstAmount.toFixed(2)}</td>
+                    <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{safeNumberFormat(cgstAmount)}</td>
                     <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{currentInvoice.sgstRate}%</td>
-                    <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{sgstAmount.toFixed(2)}</td>
-                    <td className="p-2 text-right">{totalTax.toFixed(2)}</td>
+                    <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{safeNumberFormat(sgstAmount)}</td>
+                    <td className="p-2 text-right">{safeNumberFormat(totalTax)}</td>
                   </tr>
                 );
               })}
               
               <tr className="border-b border-gray-800 print:border-gray-800">
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">Total</td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.totalTaxableAmount.toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.totalTaxableAmount)}</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800"></td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.cgstAmount.toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.cgstAmount)}</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800"></td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.sgstAmount.toFixed(2)}</td>
-                <td className="p-2 text-right font-bold">{(currentInvoice.cgstAmount + currentInvoice.sgstAmount).toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.sgstAmount)}</td>
+                <td className="p-2 text-right font-bold">{safeNumberFormat(parseFloat(currentInvoice.cgstAmount?.toString() || '0') + parseFloat(currentInvoice.sgstAmount?.toString() || '0'))}</td>
               </tr>
             </tbody>
           </table>
@@ -421,11 +427,11 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
             </thead>
             <tbody>
               {currentInvoice.items.map((item, index) => (
-                <tr key={item.id} className="border-b border-gray-800 print:border-gray-800">
+                <tr key={`goods-${item.id || index}`} className="border-b border-gray-800 print:border-gray-800">
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.hsnSac}</td>
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.description}</td>
                   <td className="p-2 border-r border-gray-800 print:border-gray-800">{item.quantity} NOS</td>
-                  <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{item.amount.toFixed(2)}</td>
+                  <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right">{safeNumberFormat(item.amount)}</td>
                   <td className="p-2 text-right">{currentInvoice.cgstRate}+{currentInvoice.sgstRate}</td>
                 </tr>
               ))}
@@ -433,31 +439,31 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
               <tr className="border-b border-gray-800 print:border-gray-800">
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold" colSpan={2}>Total Taxable Amt</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800">:</td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.totalTaxableAmount.toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.totalTaxableAmount)}</td>
                 <td></td>
               </tr>
               <tr className="border-b border-gray-800 print:border-gray-800">
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold" colSpan={2}>Other Amt</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800">:</td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">({Math.abs(currentInvoice.roundedOff).toFixed(2)})</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">({Math.abs(parseFloat(currentInvoice.roundedOff?.toString() || '0')).toFixed(2)})</td>
                 <td></td>
               </tr>
               <tr>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold" colSpan={2}>CGST Amt</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800">:</td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.cgstAmount.toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.cgstAmount)}</td>
                 <td></td>
               </tr>
               <tr>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold" colSpan={2}>SGST Amt</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800">:</td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.sgstAmount.toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.sgstAmount)}</td>
                 <td></td>
               </tr>
               <tr>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold" colSpan={2}>Total Inv Amt</td>
                 <td className="p-2 border-r border-gray-800 print:border-gray-800">:</td>
-                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{currentInvoice.totalAmount.toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-800 print:border-gray-800 text-right font-bold">{safeNumberFormat(currentInvoice.totalAmount)}</td>
                 <td></td>
               </tr>
             </tbody>

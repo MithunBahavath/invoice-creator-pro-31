@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
@@ -66,14 +65,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
     if (watchItems) {
       // Calculate the total taxable amount
       const totalTaxableAmount = watchItems.reduce((sum, item) => {
-        return sum + (item?.amount || 0);
+        return sum + (parseFloat(item?.amount?.toString() || '0') || 0);
       }, 0);
       
       setValue('totalTaxableAmount', totalTaxableAmount);
       
       // Calculate tax amounts
-      const cgstRate = getValues('cgstRate');
-      const sgstRate = getValues('sgstRate');
+      const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
+      const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
       
       const { cgstAmount, sgstAmount, totalAmount, roundedOff } = calculateTaxes(
         totalTaxableAmount, 
@@ -109,15 +108,18 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
   // Calculate item amount when quantity or rate changes
   const calculateItemAmount = (index: number) => {
     const item = getValues(`items.${index}`);
-    if (item && item.quantity && item.ratePerItem) {
-      const amount = item.quantity * item.ratePerItem;
+    if (item) {
+      const quantity = parseFloat(item.quantity?.toString() || '0') || 0;
+      const ratePerItem = parseFloat(item.ratePerItem?.toString() || '0') || 0;
+      
+      const amount = quantity * ratePerItem;
       setValue(`items.${index}.amount`, amount);
       
       // Update rate including tax
-      const cgstRate = getValues('cgstRate');
-      const sgstRate = getValues('sgstRate');
+      const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
+      const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
       const taxRate = 1 + ((cgstRate + sgstRate) / 100);
-      setValue(`items.${index}.rateIncTax`, item.ratePerItem * taxRate);
+      setValue(`items.${index}.rateIncTax`, ratePerItem * taxRate);
     }
   };
   
