@@ -98,6 +98,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 }
 
@@ -120,4 +121,71 @@
   .page-break {
     page-break-before: always;
   }
+
+  /* Enhanced table print styles */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    padding: 8px;
+    border: 1px solid #2d3748;
+  }
+
+  thead {
+    background-color: #f8f9fa !important;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f8f9fa !important;
+  }
+
+  .table-bordered {
+    border: 1px solid #2d3748;
+  }
 }
+
+/* Custom utility classes for consistent spacing and alignment */
+.form-section {
+  @apply space-y-4 mb-6;
+}
+
+.form-row {
+  @apply flex flex-wrap gap-4 items-start;
+}
+
+.form-group {
+  @apply flex-1 min-w-[250px];
+}
+
+.table-container {
+  @apply border border-gray-200 rounded-lg overflow-hidden;
+}
+
+.table-header {
+  @apply bg-gray-50 text-left font-medium text-gray-600 p-4 border-b;
+}
+
+.table-cell {
+  @apply p-4 align-middle border-b border-gray-200;
+}
+
+.table-footer {
+  @apply bg-gray-50 p-4 border-t;
+}
+
+/* Modern input styles */
+.input-modern {
+  @apply block w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm 
+         focus:ring-2 focus:ring-primary focus:border-transparent 
+         placeholder:text-gray-400;
+}
+
+/* Button enhancements */
+.btn-modern {
+  @apply inline-flex items-center justify-center px-4 py-2 border border-transparent 
+         text-sm font-medium rounded-md shadow-sm text-white bg-primary 
+         hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+}
+
