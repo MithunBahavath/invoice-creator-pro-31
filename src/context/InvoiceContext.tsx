@@ -1,0 +1,225 @@
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+
+// Define the structure of an invoice item
+export interface InvoiceItem {
+  id: string;
+  slNo: number;
+  description: string;
+  hsnSac: string;
+  quantity: number;
+  rateIncTax: number;
+  ratePerItem: number;
+  amount: number;
+}
+
+// Define the structure of an invoice
+export interface Invoice {
+  id: string;
+  // Header information
+  irn: string;
+  ackNo: string;
+  ackDate: string;
+  
+  // Seller information
+  sellerName: string;
+  sellerAddress: string;
+  sellerGstin: string;
+  sellerContact: string;
+  sellerEmail: string;
+  sellerState: string;
+  sellerStateCode: string;
+  
+  // Buyer information
+  buyerName: string;
+  buyerAddress: string;
+  buyerGstin: string;
+  buyerState: string;
+  buyerStateCode: string;
+  
+  // Invoice details
+  invoiceNo: string;
+  invoiceDate: string;
+  eWayBillNo: string;
+  deliveryNote: string;
+  mode: string;
+  reference: string;
+  buyerOrderNo: string;
+  buyerOrderDate: string;
+  dispatchDocNo: string;
+  deliveryNoteDate: string;
+  dispatchedThrough: string;
+  destination: string;
+  termsOfDelivery: string;
+  
+  // Items and calculations
+  items: InvoiceItem[];
+  cgstRate: number;
+  sgstRate: number;
+  cgstAmount: number;
+  sgstAmount: number;
+  totalTaxableAmount: number;
+  roundedOff: number;
+  totalAmount: number;
+  amountInWords: string;
+  
+  // Bank details
+  bankName: string;
+  accountNo: string;
+  ifscCode: string;
+  branchName: string;
+  
+  // e-Way Bill details
+  ewbMode: string;
+  ewbDistance: string;
+  ewbTransactionType: string;
+  ewbSupplyType: string;
+  ewbGeneratedBy: string;
+  ewbGeneratedDate: string;
+  ewbValidUpto: string;
+  vehicleNo: string;
+  transporterId: string;
+  transporterName: string;
+  fromPlace: string;
+}
+
+// Define the initial state of a new invoice
+export const initialInvoiceState: Invoice = {
+  id: uuidv4(),
+  irn: '',
+  ackNo: '',
+  ackDate: '',
+  sellerName: 'Sakthi Gas Service',
+  sellerAddress: '5-A Kaliyamman Kovil Street, Old Bus Stand, Kumbakonam, Tamil Nadu - 612001, India',
+  sellerGstin: '33BKYPS9603Q1ZY',
+  sellerContact: '0435 2421381,9842993884',
+  sellerEmail: 'sivasakthi.kum@gmail.com',
+  sellerState: 'Tamil Nadu',
+  sellerStateCode: '33',
+  buyerName: '',
+  buyerAddress: '',
+  buyerGstin: '',
+  buyerState: 'Tamil Nadu',
+  buyerStateCode: '33',
+  invoiceNo: '',
+  invoiceDate: new Date().toISOString().split('T')[0],
+  eWayBillNo: '',
+  deliveryNote: '',
+  mode: '',
+  reference: '',
+  buyerOrderNo: '',
+  buyerOrderDate: '',
+  dispatchDocNo: '',
+  deliveryNoteDate: '',
+  dispatchedThrough: '',
+  destination: '',
+  termsOfDelivery: '',
+  items: [],
+  cgstRate: 2.5,
+  sgstRate: 2.5,
+  cgstAmount: 0,
+  sgstAmount: 0,
+  totalTaxableAmount: 0,
+  roundedOff: 0,
+  totalAmount: 0,
+  amountInWords: '',
+  bankName: 'City Union Bank',
+  accountNo: '510909010109147',
+  ifscCode: 'CIUB0000003',
+  branchName: 'Kumbakonam Town',
+  ewbMode: '1 - Road',
+  ewbDistance: '',
+  ewbTransactionType: 'Regular',
+  ewbSupplyType: 'Outward-Supply',
+  ewbGeneratedBy: '',
+  ewbGeneratedDate: '',
+  ewbValidUpto: '',
+  vehicleNo: '',
+  transporterId: '',
+  transporterName: '',
+  fromPlace: 'Kumbakonam',
+};
+
+// Define the context type
+interface InvoiceContextType {
+  invoices: Invoice[];
+  addInvoice: (invoice: Invoice) => void;
+  updateInvoice: (invoice: Invoice) => void;
+  deleteInvoice: (id: string) => void;
+  getInvoice: (id: string) => Invoice | undefined;
+  currentInvoice: Invoice;
+  setCurrentInvoice: React.Dispatch<React.SetStateAction<Invoice>>;
+  resetCurrentInvoice: () => void;
+}
+
+// Create the context
+const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
+
+// Create a provider component
+export const InvoiceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize state from localStorage or use empty array
+  const [invoices, setInvoices] = useState<Invoice[]>(() => {
+    const savedInvoices = localStorage.getItem('invoices');
+    return savedInvoices ? JSON.parse(savedInvoices) : [];
+  });
+  
+  const [currentInvoice, setCurrentInvoice] = useState<Invoice>({ ...initialInvoiceState });
+
+  // Save to localStorage whenever invoices change
+  useEffect(() => {
+    localStorage.setItem('invoices', JSON.stringify(invoices));
+  }, [invoices]);
+
+  // Add a new invoice
+  const addInvoice = (invoice: Invoice) => {
+    setInvoices([...invoices, invoice]);
+  };
+
+  // Update an existing invoice
+  const updateInvoice = (updatedInvoice: Invoice) => {
+    setInvoices(invoices.map(inv => (inv.id === updatedInvoice.id ? updatedInvoice : inv)));
+  };
+
+  // Delete an invoice
+  const deleteInvoice = (id: string) => {
+    setInvoices(invoices.filter(invoice => invoice.id !== id));
+  };
+
+  // Get a specific invoice by ID
+  const getInvoice = (id: string) => {
+    return invoices.find(invoice => invoice.id === id);
+  };
+
+  // Reset the current invoice to initial state
+  const resetCurrentInvoice = () => {
+    setCurrentInvoice({ ...initialInvoiceState, id: uuidv4() });
+  };
+
+  // Value object to be provided by the context
+  const value = {
+    invoices,
+    addInvoice,
+    updateInvoice,
+    deleteInvoice,
+    getInvoice,
+    currentInvoice,
+    setCurrentInvoice,
+    resetCurrentInvoice,
+  };
+
+  return (
+    <InvoiceContext.Provider value={value}>
+      {children}
+    </InvoiceContext.Provider>
+  );
+};
+
+// Custom hook to use the invoice context
+export const useInvoice = () => {
+  const context = useContext(InvoiceContext);
+  if (context === undefined) {
+    throw new Error('useInvoice must be used within an InvoiceProvider');
+  }
+  return context;
+};
