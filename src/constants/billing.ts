@@ -1,4 +1,3 @@
-
 export interface Buyer {
   name: string;
   address: string;
@@ -11,6 +10,8 @@ export interface PresetItem {
   description: string;
   hsnSac: string;
   defaultRate: number;
+  gstRate: number;
+  usageType: "Domestic" | "Commercial";
 }
 
 export let BUYERS: Buyer[] = [
@@ -34,26 +35,36 @@ export const PRESET_ITEMS: PresetItem[] = [
   {
     description: "8KG CYLINDER",
     hsnSac: "27111900",
-    defaultRate: 800
+    defaultRate: 800,
+    gstRate: 5,
+    usageType: "Domestic"
   },
   {
     description: "12KG CYLINDER",
     hsnSac: "27111900",
-    defaultRate: 1200
+    defaultRate: 1200,
+    gstRate: 5,
+    usageType: "Domestic"
   },
   {
     description: "17KG CYLINDER",
     hsnSac: "27111900",
-    defaultRate: 1700
+    defaultRate: 1700,
+    gstRate: 5,
+    usageType: "Domestic"
   },
   {
     description: "21KG CYLINDER",
     hsnSac: "27111900",
-    defaultRate: 2100
+    defaultRate: 2100,
+    gstRate: 5,
+    usageType: "Domestic"
   },
   {
     description: "33KG CYLINDER",
     hsnSac: "27111900",
-    defaultRate: 3300
+    defaultRate: 3300,
+    gstRate: 18,
+    usageType: "Commercial"
   }
 ];
