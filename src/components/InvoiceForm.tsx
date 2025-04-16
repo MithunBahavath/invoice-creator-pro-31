@@ -30,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import PresetItemSelector from './PresetItemSelector';
 
 interface InvoiceFormProps {
   onPrintClick: () => void;
@@ -362,48 +363,28 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Items</h2>
-            <div className="flex gap-2">
-              <Select onValueChange={(value) => {
-                const preset = PRESET_ITEMS[parseInt(value)];
-                if (preset) addPresetItem(preset);
-              }}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Add preset item" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRESET_ITEMS.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {item.description}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button type="button" onClick={addItem} variant="outline" size="sm">
-                <Plus className="mr-1 h-4 w-4" /> Add Custom Item
-              </Button>
-            </div>
+            <PresetItemSelector onItemSelect={addPresetItem} />
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2 font-medium">Sl. No.</th>
-                  <th className="text-left p-2 font-medium">Description</th>
-                  <th className="text-left p-2 font-medium">HSN/SAC</th>
-                  <th className="text-left p-2 font-medium">Qty</th>
-                  <th className="text-left p-2 font-medium">Rate (Incl. Tax)</th>
-                  <th className="text-left p-2 font-medium">Rate (Per Item)</th>
-                  <th className="text-left p-2 font-medium">Amount</th>
-                  <th className="text-left p-2 font-medium">Action</th>
+                  <th className="text-left p-2 font-medium w-16">Sl. No.</th>
+                  <th className="text-left p-2 font-medium flex-1">Description</th>
+                  <th className="text-left p-2 font-medium w-24">HSN/SAC</th>
+                  <th className="text-left p-2 font-medium w-20">Qty</th>
+                  <th className="text-right p-2 font-medium w-32">Rate (Incl. Tax)</th>
+                  <th className="text-right p-2 font-medium w-32">Rate (Per Item)</th>
+                  <th className="text-right p-2 font-medium w-32">Amount</th>
+                  <th className="text-center p-2 font-medium w-16">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {fields.length === 0 && (
                   <tr>
                     <td colSpan={8} className="text-center p-4 text-gray-500">
-                      No items added. Click "Add Item" to add your first item.
+                      No items added. Use the options above to add items.
                     </td>
                   </tr>
                 )}
@@ -420,7 +401,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                     </td>
                     <td className="p-2">
                       <Input
-                        {...register(`items.${index}.description` as const, { required: true })}
+                        {...register(`items.${index}.description` as const)}
                         placeholder="Item description"
                       />
                     </td>
@@ -428,6 +409,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                       <Input
                         {...register(`items.${index}.hsnSac` as const)}
                         placeholder="HSN/SAC"
+                        className="w-24"
                       />
                     </td>
                     <td className="p-2">
@@ -455,7 +437,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                         step="0.01"
                         min="0"
                         readOnly
-                        className="w-24"
+                        className="w-28 text-right"
                       />
                     </td>
                     <td className="p-2">
@@ -472,7 +454,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                               field.onChange(parseFloat(e.target.value) || 0);
                               calculateItemAmount(index);
                             }}
-                            className="w-24"
+                            className="w-28 text-right"
                           />
                         )}
                       />
@@ -483,10 +465,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                         type="number"
                         step="0.01"
                         readOnly
-                        className="w-24"
+                        className="w-28 text-right"
                       />
                     </td>
-                    <td className="p-2">
+                    <td className="p-2 text-center">
                       <Button
                         type="button"
                         onClick={() => remove(index)}
@@ -500,6 +482,18 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                 ))}
               </tbody>
             </table>
+          </div>
+          
+          <div className="mt-4 flex justify-end">
+            <Button 
+              type="button" 
+              onClick={addItem} 
+              variant="outline" 
+              size="sm"
+              className="flex items-center"
+            >
+              <Plus className="mr-1 h-4 w-4" /> Add Custom Item
+            </Button>
           </div>
         </CardContent>
       </Card>
