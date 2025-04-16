@@ -25,11 +25,14 @@ const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect })
   };
 
   const handleItemSelect = (itemDescription: string) => {
-    const item = getItemsByCategory(selectedCategory).find(
-      i => i.description === itemDescription
-    );
-    if (item) {
-      setSelectedItem(item);
+    // Only attempt to find items if a category is selected
+    if (selectedCategory) {
+      const item = getItemsByCategory(selectedCategory).find(
+        i => i.description === itemDescription
+      );
+      if (item) {
+        setSelectedItem(item);
+      }
     }
   };
 
