@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,8 @@ import {
 import { ChevronLeft, Edit, Trash2, FileText, Search, Plus } from 'lucide-react';
 import { useInvoice, Invoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { InvoicePrint } from '@/components/ui/invoice-print';
 
 const InvoiceHistoryPage: React.FC = () => {
   const { invoices, deleteInvoice, setCurrentInvoice } = useInvoice();
@@ -34,7 +35,6 @@ const InvoiceHistoryPage: React.FC = () => {
   const [sortField, setSortField] = useState<keyof Invoice>('invoiceDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  // Filter and sort invoices
   const filteredInvoices = invoices.filter(invoice => {
     const searchLower = search.toLowerCase();
     const dateMatches = !dateFilter || invoice.invoiceDate.includes(dateFilter);
@@ -60,7 +60,6 @@ const InvoiceHistoryPage: React.FC = () => {
       : fieldB.localeCompare(fieldA);
   });
 
-  // Handle sort toggle
   const toggleSort = (field: keyof Invoice) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -70,7 +69,6 @@ const InvoiceHistoryPage: React.FC = () => {
     }
   };
 
-  // Load invoice for editing
   const handleEdit = (invoice: Invoice) => {
     setCurrentInvoice({...invoice});
   };
@@ -88,7 +86,12 @@ const InvoiceHistoryPage: React.FC = () => {
             </Link>
             <h1 className="text-2xl font-bold">Invoice History</h1>
           </div>
-          <div>
+          <div className="flex space-x-2">
+            <Link to="/update">
+              <Button variant="secondary">
+                Settings & Updates
+              </Button>
+            </Link>
             <Link to="/create-invoice">
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -208,6 +211,31 @@ const InvoiceHistoryPage: React.FC = () => {
                           <TableCell className="text-right">₹ {invoice.totalAmount.toFixed(2)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <FileText className="h-4 w-4" />
+                                    <span className="sr-only">View</span>
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Invoice #{invoice.invoiceNo}</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="overflow-y-auto max-h-[80vh]">
+                                    <InvoicePrint invoice={invoice} />
+                                  </div>
+                                  <DialogFooter>
+                                    <Button 
+                                      onClick={() => window.print()}
+                                      className="print:hidden"
+                                    >
+                                      Download PDF
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+
                               <Link to="/create-invoice">
                                 <Button 
                                   variant="ghost" 
