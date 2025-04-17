@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Receipt, History, Plus } from 'lucide-react';
+import { Receipt, History, Plus, Settings } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
       </header>
 
       <main className="flex-grow flex items-center justify-center p-6">
-        <div className="max-w-5xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="max-w-5xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
@@ -59,6 +59,30 @@ const HomePage: React.FC = () => {
               <Link to="/invoice-history" className="w-full">
                 <Button className="w-full" variant="outline" size="lg">
                   <History className="mr-2 h-4 w-4" /> View Invoices
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Settings className="h-6 w-6" />
+                Update Details
+              </CardTitle>
+              <CardDescription>
+                Manage buyers, cylinders, and tax configurations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                Add or edit buyers, manage cylinder sizes and their prices, and configure tax rates for different product types.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Link to="/update" className="w-full">
+                <Button className="w-full" variant="secondary" size="lg">
+                  <Settings className="mr-2 h-4 w-4" /> Update Details
                 </Button>
               </Link>
             </CardFooter>

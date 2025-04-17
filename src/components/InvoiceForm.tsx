@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
@@ -105,11 +104,25 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
       id: uuidv4(),
       slNo: newItemIndex,
       description: '',
-      hsnSac: '',
+      hsnSac: '27111900',
       quantity: 0,
       rateIncTax: 0,
       ratePerItem: 0,
       amount: 0
+    });
+  };
+
+  const addPresetItem = (preset: { description: string; hsnSac: string; defaultRate: number }) => {
+    const newItemIndex = fields.length + 1;
+    append({
+      id: uuidv4(),
+      slNo: newItemIndex,
+      description: preset.description,
+      hsnSac: preset.hsnSac,
+      quantity: 1,
+      ratePerItem: preset.defaultRate,
+      rateIncTax: 0,
+      amount: preset.defaultRate
     });
   };
   
@@ -138,20 +151,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
       setValue('buyerState', selectedBuyer.state);
       setValue('buyerStateCode', selectedBuyer.stateCode);
     }
-  };
-  
-  const addPresetItem = (preset: typeof PRESET_ITEMS[0]) => {
-    const newItemIndex = fields.length + 1;
-    append({
-      id: uuidv4(),
-      slNo: newItemIndex,
-      description: preset.description,
-      hsnSac: preset.hsnSac,
-      quantity: 1,
-      ratePerItem: preset.defaultRate,
-      rateIncTax: 0,
-      amount: preset.defaultRate
-    });
   };
   
   const handleAddBuyer = (buyer: Buyer) => {
@@ -364,7 +363,10 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Items</h2>
-            <PresetItemSelector onItemSelect={addPresetItem} />
+            <PresetItemSelector 
+              onItemSelect={addPresetItem} 
+              onCustomItemAdd={addItem}
+            />
           </div>
           
           <div className="overflow-x-auto">
@@ -411,6 +413,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                         {...register(`items.${index}.hsnSac` as const)}
                         placeholder="HSN/SAC"
                         className="w-24"
+                        defaultValue="27111900"
                       />
                     </td>
                     <td className="p-2">
@@ -483,18 +486,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onPrintClick }) => {
                 ))}
               </tbody>
             </table>
-          </div>
-          
-          <div className="mt-4 flex justify-end">
-            <Button 
-              type="button" 
-              onClick={addItem} 
-              variant="outline" 
-              size="sm"
-              className="flex items-center"
-            >
-              <Plus className="mr-1 h-4 w-4" /> Add Custom Item
-            </Button>
           </div>
         </CardContent>
       </Card>

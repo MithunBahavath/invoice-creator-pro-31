@@ -8,31 +8,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PresetItem, getItemsByCategory } from '@/constants/billing';
 import { Plus } from 'lucide-react';
+
+interface PresetItem {
+  description: string;
+  hsnSac: string;
+  defaultRate: number;
+}
 
 interface PresetItemSelectorProps {
   onItemSelect: (item: PresetItem) => void;
+  onCustomItemAdd: () => void;
 }
 
-const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect }) => {
-  const [selectedCategory, setSelectedCategory] = useState<PresetItem['category'] | ''>('');
+const PRESET_ITEMS: PresetItem[] = [
+  { description: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800 },
+  { description: '12kg', hsnSac: '27111900', defaultRate: 1200 },
+  { description: '17kg', hsnSac: '27111900', defaultRate: 1700 },
+  { description: '33kg', hsnSac: '27111900', defaultRate: 3300 },
+];
+
+const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect, onCustomItemAdd }) => {
   const [selectedItem, setSelectedItem] = useState<PresetItem | null>(null);
 
-  const handleCategoryChange = (category: PresetItem['category']) => {
-    setSelectedCategory(category);
-    setSelectedItem(null);
-  };
-
   const handleItemSelect = (itemDescription: string) => {
-    // Only attempt to find items if a category is selected
-    if (selectedCategory) {
-      const item = getItemsByCategory(selectedCategory).find(
-        i => i.description === itemDescription
-      );
-      if (item) {
-        setSelectedItem(item);
-      }
+    const item = PRESET_ITEMS.find(i => i.description === itemDescription);
+    if (item) {
+      setSelectedItem(item);
     }
   };
 
@@ -45,33 +47,18 @@ const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect })
 
   return (
     <div className="flex gap-2 items-center">
-      <Select onValueChange={handleCategoryChange} value={selectedCategory}>
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Select type" />
+      <Select onValueChange={handleItemSelect} value={selectedItem?.description || ''}>
+        <SelectTrigger className="w-[200px]">
+          <SelectValue placeholder="Select cylinder size" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="Cylinder">Cylinder</SelectItem>
-          <SelectItem value="Bottle">Bottles</SelectItem>
+          {PRESET_ITEMS.map((item) => (
+            <SelectItem key={item.description} value={item.description}>
+              {item.description}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
-
-      {selectedCategory && (
-        <Select 
-          onValueChange={handleItemSelect} 
-          value={selectedItem?.description || ''}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder={`Select ${selectedCategory.toLowerCase()}`} />
-          </SelectTrigger>
-          <SelectContent>
-            {getItemsByCategory(selectedCategory).map((item) => (
-              <SelectItem key={item.description} value={item.description}>
-                {item.description}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
 
       {selectedItem && (
         <Button 
@@ -83,6 +70,15 @@ const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect })
           <Plus className="mr-1 h-4 w-4" /> Add
         </Button>
       )}
+      
+      <Button 
+        onClick={onCustomItemAdd}
+        variant="outline" 
+        size="sm"
+        className="ml-2"
+      >
+        <Plus className="mr-1 h-4 w-4" /> Add Custom Item
+      </Button>
     </div>
   );
 };

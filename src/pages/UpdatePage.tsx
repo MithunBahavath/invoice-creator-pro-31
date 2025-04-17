@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import ProductManagement from '@/components/ProductManagement';
 import BuyerManagement from '@/components/BuyerManagement';
+import CylinderManagement from '@/components/CylinderManagement';
+import TaxConfigurationManagement from '@/components/TaxConfigurationManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const UpdatePage = () => {
@@ -26,16 +28,24 @@ const UpdatePage = () => {
 
       <main className="flex-grow p-6">
         <div className="max-w-6xl mx-auto">
-          <Tabs defaultValue="products" className="w-full">
+          <Tabs defaultValue="buyers" className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="products">Product Management</TabsTrigger>
               <TabsTrigger value="buyers">Buyer Management</TabsTrigger>
+              <TabsTrigger value="cylinders">Cylinder Management</TabsTrigger>
+              <TabsTrigger value="taxes">Tax Configuration</TabsTrigger>
+              <TabsTrigger value="products">Other Products</TabsTrigger>
             </TabsList>
-            <TabsContent value="products">
-              <ProductManagement />
-            </TabsContent>
             <TabsContent value="buyers">
               <BuyerManagement />
+            </TabsContent>
+            <TabsContent value="cylinders">
+              <CylinderManagement />
+            </TabsContent>
+            <TabsContent value="taxes">
+              <TaxConfigurationManagement />
+            </TabsContent>
+            <TabsContent value="products">
+              <ProductManagement />
             </TabsContent>
           </Tabs>
         </div>
