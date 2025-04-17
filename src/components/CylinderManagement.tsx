@@ -13,22 +13,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Plus, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface Cylinder {
-  id: string;
-  name: string;
-  hsnSac: string;
-  defaultRate: number;
-}
+import { useCylinders, Cylinder } from '@/context/CylinderContext';
 
 const CylinderManagement = () => {
-  const [cylinders, setCylinders] = useState<Cylinder[]>([
-    { id: '1', name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800 },
-    { id: '2', name: '12kg', hsnSac: '27111900', defaultRate: 1200 },
-    { id: '3', name: '17kg', hsnSac: '27111900', defaultRate: 1700 },
-    { id: '4', name: '33kg', hsnSac: '27111900', defaultRate: 3300 },
-  ]);
-  
+  const { cylinders, addCylinder, updateCylinder } = useCylinders();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Cylinder>>({});
 
@@ -43,18 +31,18 @@ const CylinderManagement = () => {
       return;
     }
     
-    setCylinders(current =>
-      current.map(c =>
-        c.id === cylinder.id
-          ? { 
-              ...c, 
-              ...editForm, 
-              hsnSac: editForm.hsnSac || '27111900',
-              defaultRate: Number(editForm.defaultRate)
-            }
-          : c
-      )
-    );
+    const updatedCylinder = { 
+      ...cylinder, 
+      ...editForm, 
+      hsnSac: editForm.hsnSac || '27111900',
+      defaultRate: Number(editForm.defaultRate),
+      gstRate: Number(editForm.gstRate || 5)
+    };
+
+    if (cylinder.id === editingId) {
+      updateCylinder(updatedCylinder);
+    }
+    
     setEditingId(null);
     setEditForm({});
     toast.success('Cylinder updated successfully');
@@ -70,9 +58,10 @@ const CylinderManagement = () => {
       id: Date.now().toString(),
       name: '',
       hsnSac: '27111900',
-      defaultRate: 0
+      defaultRate: 0,
+      gstRate: 5
     };
-    setCylinders(current => [...current, newCylinder]);
+    addCylinder(newCylinder);
     setEditingId(newCylinder.id);
     setEditForm(newCylinder);
   };
@@ -94,6 +83,7 @@ const CylinderManagement = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>HSN/SAC</TableHead>
                 <TableHead>Default Rate</TableHead>
+                <TableHead>GST Rate (%)</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -129,6 +119,17 @@ const CylinderManagement = () => {
                         />
                       </TableCell>
                       <TableCell>
+                        <Input
+                          type="number"
+                          value={editForm.gstRate || 5}
+                          onChange={e => setEditForm(current => ({ 
+                            ...current, 
+                            gstRate: parseFloat(e.target.value) || 5 
+                          }))}
+                          placeholder="GST rate"
+                        />
+                      </TableCell>
+                      <TableCell>
                         <div className="flex gap-2">
                           <Button variant="ghost" size="sm" onClick={() => handleSave(cylinder)}>
                             <Save className="h-4 w-4" />
@@ -144,6 +145,7 @@ const CylinderManagement = () => {
                       <TableCell>{cylinder.name}</TableCell>
                       <TableCell>{cylinder.hsnSac}</TableCell>
                       <TableCell>₹{cylinder.defaultRate.toFixed(2)}</TableCell>
+                      <TableCell>{cylinder.gstRate}%</TableCell>
                       <TableCell>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(cylinder)}>
                           Edit

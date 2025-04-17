@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
+import { useCylinders } from '@/context/CylinderContext';
 
 interface PresetItem {
   description: string;
@@ -21,20 +22,18 @@ interface PresetItemSelectorProps {
   onCustomItemAdd: () => void;
 }
 
-const PRESET_ITEMS: PresetItem[] = [
-  { description: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800 },
-  { description: '12kg', hsnSac: '27111900', defaultRate: 1200 },
-  { description: '17kg', hsnSac: '27111900', defaultRate: 1700 },
-  { description: '33kg', hsnSac: '27111900', defaultRate: 3300 },
-];
-
 const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect, onCustomItemAdd }) => {
+  const { cylinders } = useCylinders();
   const [selectedItem, setSelectedItem] = useState<PresetItem | null>(null);
 
   const handleItemSelect = (itemDescription: string) => {
-    const item = PRESET_ITEMS.find(i => i.description === itemDescription);
+    const item = cylinders.find(i => i.name === itemDescription);
     if (item) {
-      setSelectedItem(item);
+      setSelectedItem({
+        description: item.name,
+        hsnSac: item.hsnSac,
+        defaultRate: item.defaultRate
+      });
     }
   };
 
@@ -52,9 +51,9 @@ const PresetItemSelector: React.FC<PresetItemSelectorProps> = ({ onItemSelect, o
           <SelectValue placeholder="Select cylinder size" />
         </SelectTrigger>
         <SelectContent>
-          {PRESET_ITEMS.map((item) => (
-            <SelectItem key={item.description} value={item.description}>
-              {item.description}
+          {cylinders.map((cylinder) => (
+            <SelectItem key={cylinder.id} value={cylinder.name}>
+              {cylinder.name}
             </SelectItem>
           ))}
         </SelectContent>

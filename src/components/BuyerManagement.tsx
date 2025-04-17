@@ -12,11 +12,12 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Plus, Save, X } from 'lucide-react';
-import { BUYERS, Buyer } from '@/constants/billing';
+import { Buyer } from '@/constants/billing';
 import { toast } from 'sonner';
+import { useBuyers } from '@/context/BuyerContext';
 
 const BuyerManagement = () => {
-  const [buyers, setBuyers] = useState<Buyer[]>(BUYERS);
+  const { buyers, addBuyer, updateBuyer } = useBuyers();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Buyer>>({});
 
@@ -26,13 +27,17 @@ const BuyerManagement = () => {
   };
 
   const handleSave = (buyer: Buyer) => {
-    setBuyers(current =>
-      current.map(b =>
-        b.gstin === buyer.gstin
-          ? { ...b, ...editForm }
-          : b
-      )
-    );
+    if (!editForm.name || !editForm.gstin) {
+      toast.error('Name and GSTIN are required');
+      return;
+    }
+
+    const updatedBuyer = { ...buyer, ...editForm };
+    
+    if (buyer.gstin === editingId) {
+      updateBuyer(updatedBuyer);
+    }
+    
     setEditingId(null);
     setEditForm({});
     toast.success('Buyer updated successfully');
@@ -51,7 +56,7 @@ const BuyerManagement = () => {
       state: 'Tamil Nadu',
       stateCode: '33'
     };
-    setBuyers(current => [...current, newBuyer]);
+    addBuyer(newBuyer);
     setEditingId(newBuyer.gstin);
     setEditForm(newBuyer);
   };
