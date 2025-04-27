@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,12 +10,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Plus, Save, X } from 'lucide-react';
+import { Plus, Save, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCylinders, Cylinder } from '@/context/CylinderContext';
 
 const CylinderManagement = () => {
-  const { cylinders, addCylinder, updateCylinder } = useCylinders();
+  const { cylinders, addCylinder, updateCylinder, deleteCylinder } = useCylinders();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Cylinder>>({});
 
@@ -64,6 +63,13 @@ const CylinderManagement = () => {
     addCylinder(newCylinder);
     setEditingId(newCylinder.id);
     setEditForm(newCylinder);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this cylinder? This action cannot be undone.')) {
+      deleteCylinder(id);
+      toast.success('Cylinder deleted successfully');
+    }
   };
 
   return (
@@ -147,9 +153,19 @@ const CylinderManagement = () => {
                       <TableCell>₹{cylinder.defaultRate.toFixed(2)}</TableCell>
                       <TableCell>{cylinder.gstRate}%</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(cylinder)}>
-                          Edit
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(cylinder)}>
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDelete(cylinder.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </>
                   )}

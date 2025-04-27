@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,13 +10,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Plus, Save, X } from 'lucide-react';
+import { Plus, Save, X, Trash2 } from 'lucide-react';
 import { Buyer } from '@/constants/billing';
 import { toast } from 'sonner';
 import { useBuyers } from '@/context/BuyerContext';
 
 const BuyerManagement = () => {
-  const { buyers, addBuyer, updateBuyer } = useBuyers();
+  const { buyers, addBuyer, updateBuyer, deleteBuyer } = useBuyers();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Buyer>>({});
 
@@ -59,6 +58,13 @@ const BuyerManagement = () => {
     addBuyer(newBuyer);
     setEditingId(newBuyer.gstin);
     setEditForm(newBuyer);
+  };
+
+  const handleDelete = (gstin: string) => {
+    if (window.confirm('Are you sure you want to delete this buyer? This action cannot be undone.')) {
+      deleteBuyer(gstin);
+      toast.success('Buyer deleted successfully');
+    }
   };
 
   return (
@@ -137,9 +143,19 @@ const BuyerManagement = () => {
                       <TableCell>{buyer.state}</TableCell>
                       <TableCell>{buyer.stateCode}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(buyer)}>
-                          Edit
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(buyer)}>
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDelete(buyer.gstin)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </>
                   )}
