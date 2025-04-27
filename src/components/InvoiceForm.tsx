@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -73,7 +74,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
     if (watchItems) {
       recalculateAmounts();
     }
-  }, [watchItems, setValue, getValues]);
+  }, [watchItems]);
   
   const recalculateAmounts = () => {
     const totalTaxableAmount = watchItems?.reduce((sum, item) => {
