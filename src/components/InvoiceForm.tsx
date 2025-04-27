@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -157,6 +156,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
     try {
       if (data.id) {
         updateInvoice(data);
+        setCurrentInvoice(data);
         toast({
           title: 'Invoice Updated',
           description: 'The invoice has been successfully updated.',
@@ -184,7 +184,9 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   };
 
   const handlePrintClick = () => {
-    if (!getValues('buyerName') || !getValues('invoiceNo')) {
+    const formData = getValues();
+    
+    if (!formData.buyerName || !formData.invoiceNo) {
       toast({
         title: 'Incomplete Invoice',
         description: 'Please fill out invoice details before printing.',
@@ -192,6 +194,19 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       });
       return;
     }
+    
+    if (!formData.id) {
+      formData.id = uuidv4();
+    }
+    
+    if (isNewInvoice) {
+      addInvoice(formData);
+    } else {
+      updateInvoice(formData);
+    }
+    
+    setCurrentInvoice(formData);
+    
     onPrintClick();
   };
 
