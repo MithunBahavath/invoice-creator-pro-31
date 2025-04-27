@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { v4 as uuidv4 } from 'uuid';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,6 +135,19 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       setValue(`items.${index}.hsnSac`, selectedCylinder.hsnSac);
       setValue(`items.${index}.ratePerItem`, selectedCylinder.defaultRate);
       calculateItemAmount(index);
+    }
+  };
+  
+  const onSubmit = (data: Invoice) => {
+    if (data.id) {
+      updateInvoice(data);
+    } else {
+      const newInvoice = {
+        ...data,
+        id: uuidv4(),
+      };
+      addInvoice(newInvoice);
+      setCurrentInvoice(newInvoice);
     }
   };
 
