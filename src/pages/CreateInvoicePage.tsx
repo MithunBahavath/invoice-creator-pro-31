@@ -29,7 +29,7 @@ const CreateInvoicePage: React.FC = () => {
   // Handle print/PDF generation
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
-    documentTitle: `Invoice_${currentInvoice.invoiceNo}`,
+    documentTitle: `Invoice_${currentInvoice.invoiceNo || 'New'}`,
     onBeforeGetContent: () => {
       if (!currentInvoice.invoiceNo || !currentInvoice.buyerName) {
         toast({
@@ -42,9 +42,9 @@ const CreateInvoicePage: React.FC = () => {
       return Promise.resolve();
     },
     onAfterPrint: () => {
-      // Auto-save the invoice after printing
+      // Auto-save the invoice after printing if there are changes
       if (currentInvoice.id) {
-        addInvoice(currentInvoice);
+        addInvoice({...currentInvoice}); // Create a new copy to ensure it's saved
         toast({
           title: 'Invoice Saved',
           description: 'The invoice has been saved to history.',

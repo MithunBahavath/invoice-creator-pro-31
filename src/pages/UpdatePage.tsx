@@ -3,7 +3,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-import ProductManagement from '@/components/ProductManagement';
 import BuyerManagement from '@/components/BuyerManagement';
 import CylinderManagement from '@/components/CylinderManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,16 +30,12 @@ const UpdatePage = () => {
             <TabsList className="mb-4">
               <TabsTrigger value="cylinders">Cylinder Management</TabsTrigger>
               <TabsTrigger value="buyers">Buyer Management</TabsTrigger>
-              <TabsTrigger value="products">Other Products</TabsTrigger>
             </TabsList>
             <TabsContent value="cylinders">
               <CylinderManagement />
             </TabsContent>
             <TabsContent value="buyers">
               <BuyerManagement />
-            </TabsContent>
-            <TabsContent value="products">
-              <ProductManagement />
             </TabsContent>
           </Tabs>
         </div>

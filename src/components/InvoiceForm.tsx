@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +10,7 @@ import { Plus, Trash2, Save, Printer } from 'lucide-react';
 import { useInvoice, Invoice, initialInvoiceState } from '@/context/InvoiceContext';
 import { useBuyers } from '@/context/BuyerContext';
 import { useCylinders } from '@/context/CylinderContext';
+import { toast } from '@/components/ui/use-toast';
 import { 
   Select,
   SelectContent,
@@ -44,6 +44,14 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const watchItems = watch('items');
   
   useEffect(() => {
+    if (currentInvoice?.id) {
+      setIsNewInvoice(false);
+    } else {
+      setIsNewInvoice(true);
+    }
+  }, [currentInvoice]);
+
+  useEffect(() => {
     if (isNewInvoice) {
       const currentDate = new Date();
       const dateStr = currentDate.toISOString().split('T')[0];
@@ -63,29 +71,33 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   
   useEffect(() => {
     if (watchItems) {
-      const totalTaxableAmount = watchItems.reduce((sum, item) => {
-        return sum + (parseFloat(item?.amount?.toString() || '0') || 0);
-      }, 0);
-      
-      setValue('totalTaxableAmount', totalTaxableAmount);
-      
-      const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
-      const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
-      
-      const { cgstAmount, sgstAmount, totalAmount, roundedOff } = calculateTaxes(
-        totalTaxableAmount, 
-        cgstRate, 
-        sgstRate
-      );
-      
-      setValue('cgstAmount', cgstAmount);
-      setValue('sgstAmount', sgstAmount);
-      setValue('roundedOff', roundedOff);
-      setValue('totalAmount', totalAmount);
-      
-      setValue('amountInWords', numberToWords(totalAmount));
+      recalculateAmounts();
     }
   }, [watchItems, setValue, getValues]);
+  
+  const recalculateAmounts = () => {
+    const totalTaxableAmount = watchItems?.reduce((sum, item) => {
+      return sum + (parseFloat(item?.amount?.toString() || '0') || 0);
+    }, 0) || 0;
+    
+    setValue('totalTaxableAmount', totalTaxableAmount);
+    
+    const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
+    const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
+    
+    const { cgstAmount, sgstAmount, totalAmount, roundedOff } = calculateTaxes(
+      totalTaxableAmount, 
+      cgstRate, 
+      sgstRate
+    );
+    
+    setValue('cgstAmount', cgstAmount);
+    setValue('sgstAmount', sgstAmount);
+    setValue('roundedOff', roundedOff);
+    setValue('totalAmount', totalAmount);
+    
+    setValue('amountInWords', numberToWords(totalAmount));
+  };
   
   const handleBuyerSelect = (buyerId: string) => {
     const selectedBuyer = buyers.find(buyer => buyer.gstin === buyerId);
@@ -125,6 +137,8 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
       const taxRate = 1 + ((cgstRate + sgstRate) / 100);
       setValue(`items.${index}.rateIncTax`, ratePerItem * taxRate);
+      
+      recalculateAmounts();
     }
   };
 
@@ -139,16 +153,45 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   };
   
   const onSubmit = (data: Invoice) => {
-    if (data.id) {
-      updateInvoice(data);
-    } else {
-      const newInvoice = {
-        ...data,
-        id: uuidv4(),
-      };
-      addInvoice(newInvoice);
-      setCurrentInvoice(newInvoice);
+    try {
+      if (data.id) {
+        updateInvoice(data);
+        toast({
+          title: 'Invoice Updated',
+          description: 'The invoice has been successfully updated.',
+        });
+      } else {
+        const newInvoice = {
+          ...data,
+          id: uuidv4(),
+        };
+        addInvoice(newInvoice);
+        setCurrentInvoice(newInvoice);
+        toast({
+          title: 'Invoice Saved',
+          description: 'The invoice has been successfully saved.',
+        });
+      }
+    } catch (error) {
+      console.error('Error saving invoice:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save the invoice. Please try again.',
+        variant: 'destructive',
+      });
     }
+  };
+
+  const handlePrintClick = () => {
+    if (!getValues('buyerName') || !getValues('invoiceNo')) {
+      toast({
+        title: 'Incomplete Invoice',
+        description: 'Please fill out invoice details before printing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    onPrintClick();
   };
 
   return (
@@ -426,7 +469,10 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                     <td className="p-2 text-center">
                       <Button
                         type="button"
-                        onClick={() => remove(index)}
+                        onClick={() => {
+                          remove(index);
+                          setTimeout(() => recalculateAmounts(), 0);
+                        }}
                         variant="ghost"
                         size="sm"
                       >
@@ -461,9 +507,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                         {...field}
                         onChange={(e) => {
                           field.onChange(parseFloat(e.target.value) || 0);
-                          watchItems?.forEach((_, index) => {
-                            calculateItemAmount(index);
-                          });
+                          recalculateAmounts();
                         }}
                       />
                     )}
@@ -495,9 +539,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                         {...field}
                         onChange={(e) => {
                           field.onChange(parseFloat(e.target.value) || 0);
-                          watchItems?.forEach((_, index) => {
-                            calculateItemAmount(index);
-                          });
+                          recalculateAmounts();
                         }}
                       />
                     )}
@@ -632,7 +674,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
         <Button 
           type="button" 
           variant="outline" 
-          onClick={onPrintClick}
+          onClick={handlePrintClick}
           className="min-w-[150px]"
         >
           <Printer className="mr-2 h-4 w-4" /> Print/Download
