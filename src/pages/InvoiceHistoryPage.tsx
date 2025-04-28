@@ -22,11 +22,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ChevronLeft, Edit, Trash2, FileText, Search, Plus } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronLeft, Edit, Trash2, FileText, Search, Plus, Share2 } from 'lucide-react';
 import { useInvoice, Invoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvoicePrint } from '@/components/ui/invoice-print';
+import { toast } from '@/components/ui/use-toast';
 
 const InvoiceHistoryPage: React.FC = () => {
   const { invoices, deleteInvoice, setCurrentInvoice } = useInvoice();
@@ -71,6 +78,30 @@ const InvoiceHistoryPage: React.FC = () => {
 
   const handleEdit = (invoice: Invoice) => {
     setCurrentInvoice({...invoice});
+  };
+
+  const handleShare = async (invoice: Invoice, method: 'copy' | 'email') => {
+    const invoiceUrl = `${window.location.origin}/invoice/${invoice.id}`;
+    
+    if (method === 'copy') {
+      try {
+        await navigator.clipboard.writeText(invoiceUrl);
+        toast({
+          title: "Link Copied",
+          description: "Invoice link has been copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Failed to copy link to clipboard",
+          variant: "destructive",
+        });
+      }
+    } else if (method === 'email') {
+      const subject = `Invoice ${invoice.invoiceNo} from ${invoice.sellerName}`;
+      const body = `View invoice details at: ${invoiceUrl}`;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    }
   };
 
   return (
@@ -247,6 +278,23 @@ const InvoiceHistoryPage: React.FC = () => {
                                 </Button>
                               </Link>
                               
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <Share2 className="h-4 w-4" />
+                                    <span className="sr-only">Share</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleShare(invoice, 'copy')}>
+                                    Copy Link
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleShare(invoice, 'email')}>
+                                    Share via Email
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button variant="ghost" size="sm" className="text-red-600">
