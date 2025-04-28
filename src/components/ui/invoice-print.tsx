@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useInvoice, Invoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
@@ -9,7 +8,6 @@ interface InvoicePrintProps {
 }
 
 export const InvoicePrint: React.FC<InvoicePrintProps> = ({ invoice }) => {
-  // Helper function to safely format numbers
   const safeNumberFormat = (value: any, decimals = 2): string => {
     const num = parseFloat(value);
     return isNaN(num) ? '0.00' : num.toFixed(decimals);
@@ -76,7 +74,7 @@ export const InvoicePrint: React.FC<InvoicePrintProps> = ({ invoice }) => {
             </div>
           </div>
 
-          {/* Invoice Details */}
+          {/* Invoice Details - Modified to remove fields */}
           <div className="p-3 grid grid-cols-2 gap-2">
             <div className="font-semibold">Invoice No.</div>
             <div>{invoice.invoiceNo}</div>
@@ -87,38 +85,8 @@ export const InvoicePrint: React.FC<InvoicePrintProps> = ({ invoice }) => {
             <div className="font-semibold">Dated</div>
             <div>{formatDate(invoice.invoiceDate)}</div>
             
-            <div className="font-semibold">Delivery Note</div>
-            <div>{invoice.deliveryNote}</div>
-            
             <div className="font-semibold">Mode/Terms of Payment</div>
             <div>{invoice.mode}</div>
-            
-            <div className="font-semibold">Reference No. & Date</div>
-            <div>{invoice.reference}</div>
-            
-            <div className="font-semibold">Other References</div>
-            <div></div>
-            
-            <div className="font-semibold">Buyer's Order No.</div>
-            <div>{invoice.buyerOrderNo}</div>
-            
-            <div className="font-semibold">Dated</div>
-            <div>{invoice.buyerOrderDate ? formatDate(invoice.buyerOrderDate) : ''}</div>
-            
-            <div className="font-semibold">Dispatch Doc No.</div>
-            <div>{invoice.dispatchDocNo}</div>
-            
-            <div className="font-semibold">Delivery Note Date</div>
-            <div>{invoice.deliveryNoteDate ? formatDate(invoice.deliveryNoteDate) : ''}</div>
-            
-            <div className="font-semibold">Dispatched through</div>
-            <div>{invoice.dispatchedThrough}</div>
-            
-            <div className="font-semibold">Destination</div>
-            <div>{invoice.destination}</div>
-            
-            <div className="font-semibold">Terms of Delivery</div>
-            <div>{invoice.termsOfDelivery}</div>
           </div>
         </div>
 

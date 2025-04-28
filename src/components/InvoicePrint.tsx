@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useInvoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
@@ -79,7 +78,7 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
             </div>
           </div>
 
-          {/* Invoice Details */}
+          {/* Invoice Details - Modified to remove fields */}
           <div className="p-3 grid grid-cols-2 gap-2">
             <div className="font-semibold">Invoice No.</div>
             <div>{currentInvoice.invoiceNo}</div>
@@ -90,38 +89,8 @@ const InvoicePrint: React.FC<InvoicePrintProps> = ({ forwardRef }) => {
             <div className="font-semibold">Dated</div>
             <div>{formatDate(currentInvoice.invoiceDate)}</div>
             
-            <div className="font-semibold">Delivery Note</div>
-            <div>{currentInvoice.deliveryNote}</div>
-            
             <div className="font-semibold">Mode/Terms of Payment</div>
             <div>{currentInvoice.mode}</div>
-            
-            <div className="font-semibold">Reference No. & Date</div>
-            <div>{currentInvoice.reference}</div>
-            
-            <div className="font-semibold">Other References</div>
-            <div></div>
-            
-            <div className="font-semibold">Buyer's Order No.</div>
-            <div>{currentInvoice.buyerOrderNo}</div>
-            
-            <div className="font-semibold">Dated</div>
-            <div>{currentInvoice.buyerOrderDate ? formatDate(currentInvoice.buyerOrderDate) : ''}</div>
-            
-            <div className="font-semibold">Dispatch Doc No.</div>
-            <div>{currentInvoice.dispatchDocNo}</div>
-            
-            <div className="font-semibold">Delivery Note Date</div>
-            <div>{currentInvoice.deliveryNoteDate ? formatDate(currentInvoice.deliveryNoteDate) : ''}</div>
-            
-            <div className="font-semibold">Dispatched through</div>
-            <div>{currentInvoice.dispatchedThrough}</div>
-            
-            <div className="font-semibold">Destination</div>
-            <div>{currentInvoice.destination}</div>
-            
-            <div className="font-semibold">Terms of Delivery</div>
-            <div>{currentInvoice.termsOfDelivery}</div>
           </div>
         </div>
 
