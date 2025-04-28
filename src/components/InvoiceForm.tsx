@@ -315,41 +315,6 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
               <Label htmlFor="eWayBillNo">e-Way Bill No.</Label>
               <Input id="eWayBillNo" {...register('eWayBillNo')} />
             </div>
-            
-            <div>
-              <Label htmlFor="deliveryNote">Delivery Note</Label>
-              <Input id="deliveryNote" {...register('deliveryNote')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="reference">Reference No. & Date</Label>
-              <Input id="reference" {...register('reference')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="buyerOrderNo">Buyer's Order No.</Label>
-              <Input id="buyerOrderNo" {...register('buyerOrderNo')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="dispatchDocNo">Dispatch Doc No.</Label>
-              <Input id="dispatchDocNo" {...register('dispatchDocNo')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="dispatchedThrough">Dispatched Through</Label>
-              <Input id="dispatchedThrough" {...register('dispatchedThrough')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="destination">Destination</Label>
-              <Input id="destination" {...register('destination')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="termsOfDelivery">Terms of Delivery</Label>
-              <Input id="termsOfDelivery" {...register('termsOfDelivery')} />
-            </div>
           </div>
         </CardContent>
       </Card>
