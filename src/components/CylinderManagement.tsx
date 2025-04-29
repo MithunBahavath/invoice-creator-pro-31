@@ -15,10 +15,16 @@ import { Plus, Save, X, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCylinders, Cylinder } from '@/context/CylinderContext';
 
+// Define a type for our edit form that explicitly allows string or number for rate fields
+type CylinderEditForm = Partial<Cylinder> & { 
+  defaultRate?: string | number;
+  gstRate?: string | number;
+};
+
 const CylinderManagement = () => {
   const { cylinders, addCylinder, updateCylinder, deleteCylinder } = useCylinders();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Cylinder> & { defaultRate?: string | number, gstRate?: string | number }>({});
+  const [editForm, setEditForm] = useState<CylinderEditForm>({});
 
   const handleEdit = (cylinder: Cylinder) => {
     setEditingId(cylinder.id);
@@ -125,9 +131,9 @@ const CylinderManagement = () => {
                           type="number"
                           value={editForm.defaultRate === 0 || editForm.defaultRate ? editForm.defaultRate : ''}
                           onFocus={handleInputFocus}
-                          onChange={e => setEditForm(current => ({ 
+                          onChange={e => setEditForm((current) => ({ 
                             ...current, 
-                            defaultRate: e.target.value === '' ? '' : e.target.value
+                            defaultRate: e.target.value === '' ? '' : e.target.value 
                           }))}
                           placeholder="Default rate"
                         />
@@ -137,9 +143,9 @@ const CylinderManagement = () => {
                           type="number"
                           value={editForm.gstRate === 0 || editForm.gstRate ? editForm.gstRate : ''}
                           onFocus={handleInputFocus}
-                          onChange={e => setEditForm(current => ({ 
+                          onChange={e => setEditForm((current) => ({ 
                             ...current, 
-                            gstRate: e.target.value === '' ? '' : e.target.value
+                            gstRate: e.target.value === '' ? '' : e.target.value 
                           }))}
                           placeholder="GST rate"
                         />
