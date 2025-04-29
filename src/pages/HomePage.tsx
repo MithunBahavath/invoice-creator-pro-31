@@ -19,7 +19,7 @@ const HomePage: React.FC = () => {
             <NavigationMenuList>
               <NavigationMenuItem>
                 <Link to="/">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary-foreground bg-transparent hover:bg-accent"}>
                     <Home className="mr-2 h-4 w-4" />
                     Home
                   </NavigationMenuLink>
@@ -27,7 +27,7 @@ const HomePage: React.FC = () => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link to="/create-invoice">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary-foreground bg-transparent hover:bg-accent"}>
                     <FileText className="mr-2 h-4 w-4" />
                     Create Invoice
                   </NavigationMenuLink>
@@ -35,14 +35,14 @@ const HomePage: React.FC = () => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link to="/invoice-history">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary-foreground bg-transparent hover:bg-accent"}>
                     <History className="mr-2 h-4 w-4" />
                     View Invoices
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary-foreground bg-transparent hover:bg-accent"}>
                   <BarChart className="mr-2 h-4 w-4" />
                   Dashboard
                 </NavigationMenuLink>
@@ -63,67 +63,8 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Features Section */}
+      {/* Features Section - Original Card Layout only (removed the three feature cards) */}
       <main className="flex-grow p-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto my-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="text-center">
-                <CardTitle className="text-xl">Easy Invoicing</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-gray-600">
-                  Create professional GST-compliant invoices instantly with print & PDF support.
-                </p>
-              </CardContent>
-              <CardFooter className="justify-center">
-                <Link to="/create-invoice" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <Plus className="mr-2 h-4 w-4" /> Start Invoicing
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="text-center">
-                <CardTitle className="text-xl">Customer Management</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-gray-600">
-                  Track customer data, invoice history, and automate reminders effortlessly.
-                </p>
-              </CardContent>
-              <CardFooter className="justify-center">
-                <Link to="/update" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <Settings className="mr-2 h-4 w-4" /> Manage Customers
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="text-center">
-                <CardTitle className="text-xl">GST & Reports</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-gray-600">
-                  Auto-calculate GST and generate reports for accounting and audits.
-                </p>
-              </CardContent>
-              <CardFooter className="justify-center">
-                <Link to="/invoice-history" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <History className="mr-2 h-4 w-4" /> View Reports
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-
-        {/* Original Card Layout */}
         <div className="max-w-6xl mx-auto mt-16">
           <h2 className="text-2xl font-bold mb-6 text-center">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
