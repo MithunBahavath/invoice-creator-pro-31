@@ -18,7 +18,7 @@ import { useCylinders, Cylinder } from '@/context/CylinderContext';
 const CylinderManagement = () => {
   const { cylinders, addCylinder, updateCylinder, deleteCylinder } = useCylinders();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Cylinder>>({});
+  const [editForm, setEditForm] = useState<Partial<Cylinder> & { defaultRate?: string | number, gstRate?: string | number }>({});
 
   const handleEdit = (cylinder: Cylinder) => {
     setEditingId(cylinder.id);
@@ -31,6 +31,7 @@ const CylinderManagement = () => {
       return;
     }
     
+    // Convert string values to numbers before saving
     const updatedCylinder = { 
       ...cylinder, 
       ...editForm, 
@@ -126,7 +127,7 @@ const CylinderManagement = () => {
                           onFocus={handleInputFocus}
                           onChange={e => setEditForm(current => ({ 
                             ...current, 
-                            defaultRate: e.target.value === '' ? '' : parseFloat(e.target.value) || 0
+                            defaultRate: e.target.value === '' ? '' : e.target.value
                           }))}
                           placeholder="Default rate"
                         />
@@ -138,7 +139,7 @@ const CylinderManagement = () => {
                           onFocus={handleInputFocus}
                           onChange={e => setEditForm(current => ({ 
                             ...current, 
-                            gstRate: e.target.value === '' ? '' : parseFloat(e.target.value) || 5
+                            gstRate: e.target.value === '' ? '' : e.target.value
                           }))}
                           placeholder="GST rate"
                         />
