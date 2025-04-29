@@ -134,7 +134,7 @@ const CylinderManagement = () => {
                           onChange={e => setEditForm((current) => ({ 
                             ...current, 
                             defaultRate: e.target.value === '' ? '' : e.target.value 
-                          }))}
+                          }) as CylinderEditForm)}
                           placeholder="Default rate"
                         />
                       </TableCell>
@@ -146,7 +146,7 @@ const CylinderManagement = () => {
                           onChange={e => setEditForm((current) => ({ 
                             ...current, 
                             gstRate: e.target.value === '' ? '' : e.target.value 
-                          }))}
+                          }) as CylinderEditForm)}
                           placeholder="GST rate"
                         />
                       </TableCell>
