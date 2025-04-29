@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ const CylinderManagement = () => {
   };
 
   const handleSave = (cylinder: Cylinder) => {
-    if (!editForm.name || !editForm.defaultRate) {
+    if (!editForm.name || editForm.defaultRate === undefined) {
       toast.error('Name and rate are required');
       return;
     }
@@ -72,6 +73,11 @@ const CylinderManagement = () => {
     }
   };
 
+  // Handle input focus to select all text
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -116,10 +122,11 @@ const CylinderManagement = () => {
                       <TableCell>
                         <Input
                           type="number"
-                          value={editForm.defaultRate || 0}
+                          value={editForm.defaultRate === 0 || editForm.defaultRate ? editForm.defaultRate : ''}
+                          onFocus={handleInputFocus}
                           onChange={e => setEditForm(current => ({ 
                             ...current, 
-                            defaultRate: parseFloat(e.target.value) || 0 
+                            defaultRate: e.target.value === '' ? '' : parseFloat(e.target.value) || 0
                           }))}
                           placeholder="Default rate"
                         />
@@ -127,10 +134,11 @@ const CylinderManagement = () => {
                       <TableCell>
                         <Input
                           type="number"
-                          value={editForm.gstRate || 5}
+                          value={editForm.gstRate === 0 || editForm.gstRate ? editForm.gstRate : ''}
+                          onFocus={handleInputFocus}
                           onChange={e => setEditForm(current => ({ 
                             ...current, 
-                            gstRate: parseFloat(e.target.value) || 5 
+                            gstRate: e.target.value === '' ? '' : parseFloat(e.target.value) || 5
                           }))}
                           placeholder="GST rate"
                         />

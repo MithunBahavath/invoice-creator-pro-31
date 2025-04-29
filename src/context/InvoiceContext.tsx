@@ -12,6 +12,7 @@ export interface InvoiceItem {
   rateIncTax: number;
   ratePerItem: number;
   amount: number;
+  cylinderId?: string; // Added to track which cylinder this item refers to
 }
 
 // Define the structure of an invoice

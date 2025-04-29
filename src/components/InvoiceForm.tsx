@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,6 +32,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const { buyers } = useBuyers();
   const { cylinders } = useCylinders();
   const [isNewInvoice, setIsNewInvoice] = useState(true);
+  const [selectedCylinderId, setSelectedCylinderId] = useState<string | null>(null);
   
   const { register, control, handleSubmit, watch, setValue, getValues } = useForm<Invoice>({
     defaultValues: currentInvoice || initialInvoiceState,
@@ -82,8 +84,23 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
     
     setValue('totalTaxableAmount', totalTaxableAmount);
     
-    const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
-    const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
+    // Calculate tax based on the selected cylinder's GST rate
+    let gstRate = 5; // Default GST rate
+    
+    // Get the GST rate from the selected cylinder
+    if (selectedCylinderId) {
+      const selectedCylinder = cylinders.find(cyl => cyl.id === selectedCylinderId);
+      if (selectedCylinder) {
+        gstRate = selectedCylinder.gstRate;
+      }
+    }
+    
+    // Split the GST rate equally between CGST and SGST
+    const cgstRate = gstRate / 2;
+    const sgstRate = gstRate / 2;
+    
+    setValue('cgstRate', cgstRate);
+    setValue('sgstRate', sgstRate);
     
     const { cgstAmount, sgstAmount, totalAmount, roundedOff } = calculateTaxes(
       totalTaxableAmount, 
@@ -133,9 +150,17 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       const amount = quantity * ratePerItem;
       setValue(`items.${index}.amount`, amount);
       
-      const cgstRate = parseFloat(getValues('cgstRate')?.toString() || '0') || 0;
-      const sgstRate = parseFloat(getValues('sgstRate')?.toString() || '0') || 0;
-      const taxRate = 1 + ((cgstRate + sgstRate) / 100);
+      // Get GST rate for this item based on the cylinder selected
+      let gstRate = 5; // Default
+      const selectedCylinderId = getValues(`items.${index}.cylinderId`);
+      if (selectedCylinderId) {
+        const selectedCylinder = cylinders.find(cyl => cyl.id === selectedCylinderId);
+        if (selectedCylinder) {
+          gstRate = selectedCylinder.gstRate;
+        }
+      }
+      
+      const taxRate = 1 + (gstRate / 100);
       setValue(`items.${index}.rateIncTax`, ratePerItem * taxRate);
       
       recalculateAmounts();
@@ -145,9 +170,11 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const handleItemSelect = (itemId: string, index: number) => {
     const selectedCylinder = cylinders.find(cyl => cyl.id === itemId);
     if (selectedCylinder) {
+      setSelectedCylinderId(itemId);
       setValue(`items.${index}.description`, selectedCylinder.name);
       setValue(`items.${index}.hsnSac`, selectedCylinder.hsnSac);
       setValue(`items.${index}.ratePerItem`, selectedCylinder.defaultRate);
+      setValue(`items.${index}.cylinderId`, selectedCylinder.id);
       calculateItemAmount(index);
     }
   };
@@ -208,6 +235,11 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
     setCurrentInvoice(formData);
     
     onPrintClick();
+  };
+
+  // Helper function to handle input focus and selection
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
   };
 
   return (
@@ -400,8 +432,9 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                             {...field}
                             type="number"
                             min="0"
+                            onFocus={handleInputFocus}
                             onChange={(e) => {
-                              field.onChange(parseFloat(e.target.value) || 0);
+                              field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0);
                               calculateItemAmount(index);
                             }}
                             className="w-20"
@@ -429,8 +462,9 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                             type="number"
                             step="0.01"
                             min="0"
+                            onFocus={handleInputFocus}
                             onChange={(e) => {
-                              field.onChange(parseFloat(e.target.value) || 0);
+                              field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0);
                               calculateItemAmount(index);
                             }}
                             className="w-28 text-right"
@@ -473,27 +507,14 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
           <h2 className="text-lg font-semibold mb-4">Tax & Total</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
+              <div>
+                <Label htmlFor="gstInfo">GST Information</Label>
+                <p className="text-sm text-muted-foreground mb-4">
+                  GST rates are applied automatically based on the selected cylinder type from settings.
+                </p>
+              </div>
+              
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="cgstRate">CGST Rate (%)</Label>
-                  <Controller
-                    control={control}
-                    name="cgstRate"
-                    render={({ field }) => (
-                      <Input
-                        id="cgstRate"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(parseFloat(e.target.value) || 0);
-                          recalculateAmounts();
-                        }}
-                      />
-                    )}
-                  />
-                </div>
                 <div>
                   <Label htmlFor="cgstAmount">CGST Amount</Label>
                   <Input
@@ -503,29 +524,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                     className="bg-gray-50"
                   />
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="sgstRate">SGST Rate (%)</Label>
-                  <Controller
-                    control={control}
-                    name="sgstRate"
-                    render={({ field }) => (
-                      <Input
-                        id="sgstRate"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(parseFloat(e.target.value) || 0);
-                          recalculateAmounts();
-                        }}
-                      />
-                    )}
-                  />
-                </div>
+                
                 <div>
                   <Label htmlFor="sgstAmount">SGST Amount</Label>
                   <Input

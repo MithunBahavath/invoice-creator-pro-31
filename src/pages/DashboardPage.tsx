@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table';
 import { useInvoice } from '@/context/InvoiceContext';
 import { useBuyers } from '@/context/BuyerContext';
-import { ChartContainer } from '@/components/ui/chart';
+import { useCylinders } from '@/context/CylinderContext';
 import { 
   BarChart, 
   Bar, 
@@ -40,6 +40,7 @@ import {
 const DashboardPage: React.FC = () => {
   const { invoices } = useInvoice();
   const { buyers } = useBuyers();
+  const { cylinders } = useCylinders();
   
   // Get most recent invoices (up to 4)
   const recentInvoices = [...invoices]
@@ -69,11 +70,39 @@ const DashboardPage: React.FC = () => {
     return dailyData;
   };
   
-  // Calculate tax breakdown (CGST vs SGST)
-  const taxData = [
-    { name: 'CGST', value: invoices.reduce((sum, inv) => sum + inv.cgstAmount, 0) },
-    { name: 'SGST', value: invoices.reduce((sum, inv) => sum + inv.sgstAmount, 0) }
-  ];
+  // Calculate revenue per cylinder type
+  const calculateCylinderRevenue = () => {
+    // Create a map to store revenue for each cylinder type
+    const cylinderRevenue = new Map<string, number>();
+    
+    // Initialize with all cylinder types from our cylinders context
+    cylinders.forEach(cylinder => {
+      cylinderRevenue.set(cylinder.name, 0);
+    });
+    
+    // Process all invoices and their items
+    invoices.forEach(invoice => {
+      invoice.items.forEach(item => {
+        if (cylinderRevenue.has(item.description)) {
+          cylinderRevenue.set(
+            item.description, 
+            (cylinderRevenue.get(item.description) || 0) + item.amount
+          );
+        } else {
+          // Handle items that might not match a cylinder name exactly
+          cylinderRevenue.set(item.description, (cylinderRevenue.get(item.description) || 0) + item.amount);
+        }
+      });
+    });
+    
+    // Convert to array format for the pie chart
+    return Array.from(cylinderRevenue.entries())
+      .filter(([_, value]) => value > 0) // Only include non-zero values
+      .map(([name, value]) => ({
+        name,
+        value
+      }));
+  };
   
   // Calculate revenue per buyer
   const buyerRevenue = buyers.map(buyer => {
@@ -91,8 +120,11 @@ const DashboardPage: React.FC = () => {
   // Revenue chart data
   const revenueData = generateDailyRevenue();
   
+  // Cylinder revenue data
+  const cylinderRevenueData = calculateCylinderRevenue();
+  
   // Colors for pie chart
-  const COLORS = ['#0088FE', '#00C49F'];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -221,20 +253,20 @@ const DashboardPage: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Tax Breakdown */}
+            {/* Revenue by Cylinder Type */}
             <Card className="col-span-1">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
-                  Tax Breakdown
+                  Revenue by Cylinder Type
                 </CardTitle>
-                <CardDescription>CGST vs SGST collected</CardDescription>
+                <CardDescription>Distribution by product</CardDescription>
               </CardHeader>
               <CardContent className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <RePieChart>
                     <Pie
-                      data={taxData}
+                      data={cylinderRevenueData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -243,11 +275,11 @@ const DashboardPage: React.FC = () => {
                       dataKey="value"
                       label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
-                      {taxData.map((entry, index) => (
+                      {cylinderRevenueData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [`₹${value}`, 'Amount']} />
+                    <Tooltip formatter={(value) => [`₹${value}`, 'Revenue']} />
                     <Legend />
                   </RePieChart>
                 </ResponsiveContainer>
