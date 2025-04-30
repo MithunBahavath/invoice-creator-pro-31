@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Receipt, History, Plus, Settings, BarChart, FileText, Home } from 'lucide-react';
+import { Receipt, History, Plus, Settings, BarChart, FileText, Home, Cylinder, Users, FileBarChart } from 'lucide-react';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 
 const HomePage: React.FC = () => {
@@ -65,11 +65,53 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Features Section - Original Card Layout only (removed the three feature cards) */}
+      {/* Statistics and Features Section - THIS IS THE NEW SECTION */}
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-gray-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl font-bold text-center mb-12">Complete Gas Distribution Management</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white p-8 rounded-xl shadow-md flex flex-col items-center text-center transition-transform hover:scale-105">
+              <div className="bg-primary/10 p-3 rounded-full mb-4">
+                <Cylinder className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Cylinder Management</h3>
+              <p className="text-gray-600">Track inventory, manage different cylinder sizes and their rates with ease.</p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-xl shadow-md flex flex-col items-center text-center transition-transform hover:scale-105">
+              <div className="bg-primary/10 p-3 rounded-full mb-4">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Customer Database</h3>
+              <p className="text-gray-600">Maintain complete customer records and access them instantly while creating invoices.</p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-xl shadow-md flex flex-col items-center text-center transition-transform hover:scale-105">
+              <div className="bg-primary/10 p-3 rounded-full mb-4">
+                <FileBarChart className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Business Analytics</h3>
+              <p className="text-gray-600">Get valuable insights with comprehensive dashboards and reports on your sales data.</p>
+            </div>
+          </div>
+          
+          <div className="flex justify-center mt-8">
+            <Link to="/dashboard" className="inline-flex items-center text-primary hover:text-primary/80">
+              <span className="mr-2">Explore all features</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Original Card Layout */}
       <main className="flex-grow p-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto mt-16">
+        <div className="max-w-6xl mx-auto mt-8">
           <h2 className="text-2xl font-bold mb-6 text-center">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
                 <CardTitle className="text-2xl flex items-center gap-2">
