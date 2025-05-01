@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from '@/components/ui/use-toast';
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft, Save, Download } from 'lucide-react';
 import InvoiceForm from '@/components/InvoiceForm';
 import InvoicePrint from '@/components/InvoicePrint';
 import { useInvoice } from '@/context/InvoiceContext';
