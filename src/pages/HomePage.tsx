@@ -65,7 +65,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Statistics and Features Section - THIS IS THE NEW SECTION */}
+      {/* Features Section - THIS IS THE NEW SECTION */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-gray-100">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-center mb-12">Complete Gas Distribution Management</h2>
@@ -107,7 +107,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section - Original Card Layout */}
+      {/* Quick Actions Section */}
       <main className="flex-grow p-6 bg-gray-50">
         <div className="max-w-6xl mx-auto mt-8">
           <h2 className="text-2xl font-bold mb-6 text-center">Quick Actions</h2>
