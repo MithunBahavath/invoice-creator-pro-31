@@ -7,7 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { ChevronLeft, Save } from 'lucide-react';
 import InvoiceForm from '@/components/InvoiceForm';
 import { useInvoice } from '@/context/InvoiceContext';
-import { InvoicePrint } from '@/components/ui/invoice-print';
+import InvoicePrint from '@/components/InvoicePrint';
 
 const CreateInvoicePage: React.FC = () => {
   const { currentInvoice, addInvoice } = useInvoice();
@@ -70,7 +70,7 @@ const CreateInvoicePage: React.FC = () => {
           
           {/* Hidden invoice for printing */}
           <div className="hidden">
-            <InvoicePrint invoice={currentInvoice} ref={invoiceRef} />
+            <InvoicePrint forwardRef={invoiceRef} />
           </div>
         </div>
       </main>
