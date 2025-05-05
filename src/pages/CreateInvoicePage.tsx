@@ -10,7 +10,7 @@ import { useInvoice } from '@/context/InvoiceContext';
 import InvoicePrint from '@/components/InvoicePrint';
 
 const CreateInvoicePage: React.FC = () => {
-  const { currentInvoice, addInvoice } = useInvoice();
+  const { currentInvoice, addInvoice, isLoading } = useInvoice();
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   // Handle print/PDF generation
@@ -55,7 +55,7 @@ const CreateInvoicePage: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <Link to="/invoice-history">
-              <Button variant="secondary">
+              <Button variant="secondary" disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />
                 View Saved Invoices
               </Button>
@@ -66,6 +66,11 @@ const CreateInvoicePage: React.FC = () => {
 
       <main className="flex-grow p-6">
         <div className="max-w-6xl mx-auto">
+          {isLoading && (
+            <div className="bg-blue-50 p-4 mb-4 rounded-md text-center">
+              <p className="text-blue-700">Processing... Please wait</p>
+            </div>
+          )}
           <InvoiceForm onPrintClick={handlePrint} />
           
           {/* Hidden invoice for printing */}
