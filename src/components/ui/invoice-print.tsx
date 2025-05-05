@@ -1,14 +1,15 @@
 
-import React from 'react';
-import { useInvoice, Invoice } from '@/context/InvoiceContext';
+import React, { forwardRef } from 'react';
+import { Invoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface InvoicePrintProps {
   invoice: Invoice;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
-export const InvoicePrint: React.FC<InvoicePrintProps> = ({ invoice }) => {
+export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ invoice }, ref) => {
   const safeNumberFormat = (value: any, decimals = 2): string => {
     const num = parseFloat(value);
     return isNaN(num) ? '0.00' : num.toFixed(decimals);
@@ -16,6 +17,7 @@ export const InvoicePrint: React.FC<InvoicePrintProps> = ({ invoice }) => {
 
   return (
     <div 
+      ref={ref}
       className="bg-white p-6 shadow-none w-[210mm] mx-auto my-0"
       style={{ fontFamily: 'Arial, sans-serif' }}
     >
@@ -443,4 +445,6 @@ export const InvoicePrint: React.FC<InvoicePrintProps> = ({ invoice }) => {
       </style>
     </div>
   );
-};
+});
+
+InvoicePrint.displayName = 'InvoicePrint';
