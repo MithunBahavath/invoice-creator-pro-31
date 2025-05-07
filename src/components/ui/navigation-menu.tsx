@@ -3,6 +3,7 @@ import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
 import { ChevronDown } from "lucide-react"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -84,7 +85,7 @@ const NavigationMenuLink = React.forwardRef<
     asChild?: boolean;
   }
 >(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? React.Slot : NavigationMenuPrimitive.Link;
+  const Comp = asChild ? Slot : NavigationMenuPrimitive.Link;
   return (
     <Comp
       ref={ref}
