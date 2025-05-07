@@ -86,11 +86,12 @@ const NavigationMenuLink = React.forwardRef<
   }
 >(({ className, asChild = false, ...props }, ref) => {
   if (asChild) {
+    // Convert props to unknown first, then to the expected type to satisfy TypeScript
     return (
       <Slot
         ref={ref}
         className={cn(className)}
-        {...(props as React.HTMLAttributes<HTMLElement>)}
+        {...(props as unknown as React.HTMLAttributes<HTMLElement>)}
       />
     );
   }
