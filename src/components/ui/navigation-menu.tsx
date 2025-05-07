@@ -85,9 +85,18 @@ const NavigationMenuLink = React.forwardRef<
     asChild?: boolean;
   }
 >(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : NavigationMenuPrimitive.Link;
+  if (asChild) {
+    return (
+      <Slot
+        ref={ref}
+        className={cn(className)}
+        {...(props as React.HTMLAttributes<HTMLElement>)}
+      />
+    );
+  }
+  
   return (
-    <Comp
+    <NavigationMenuPrimitive.Link
       ref={ref}
       className={cn(className)}
       {...props}
