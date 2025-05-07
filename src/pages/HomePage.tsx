@@ -18,36 +18,36 @@ const HomePage: React.FC = () => {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link to="/">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
+                <NavigationMenuLink asChild>
+                  <Link to="/" className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
                     <Home className="mr-2 h-4 w-4" />
                     Home
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link to="/create-invoice">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
+                <NavigationMenuLink asChild>
+                  <Link to="/create-invoice" className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
                     <FileText className="mr-2 h-4 w-4" />
                     Create Invoice
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link to="/invoice-history">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
+                <NavigationMenuLink asChild>
+                  <Link to="/invoice-history" className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
                     <History className="mr-2 h-4 w-4" />
                     View Invoices
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link to="/dashboard">
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
+                <NavigationMenuLink asChild>
+                  <Link to="/dashboard" className={navigationMenuTriggerStyle() + " text-white bg-transparent hover:bg-accent hover:text-accent-foreground"}>
                     <BarChart className="mr-2 h-4 w-4" />
                     Dashboard
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
