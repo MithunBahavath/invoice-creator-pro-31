@@ -17,10 +17,33 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Check if MongoDB URI is properly configured
+const mongoURI = process.env.MONGODB_URI;
+if (!mongoURI || mongoURI.includes('<username>') || mongoURI.includes('<password>')) {
+  console.error('ERROR: MongoDB connection string is not properly configured!');
+  console.error('Please update the .env file with your MongoDB Atlas credentials.');
+  console.error('Current value:', mongoURI);
+} else {
+  // Connect to MongoDB
+  mongoose.connect(mongoURI)
+    .then(() => console.log('Connected to MongoDB Atlas'))
+    .catch((err) => {
+      console.error('MongoDB connection error:', err);
+      console.error('Please check your MongoDB credentials and network connection.');
+    });
+}
+
+// Status route to check API health
+app.get('/api/status', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    env: {
+      nodeEnv: process.env.NODE_ENV,
+      mongoDbConfigured: Boolean(mongoURI) && !mongoURI.includes('<username>') && !mongoURI.includes('<password>')
+    }
+  });
+});
 
 // Routes
 app.use('/api/invoices', invoiceRoutes);

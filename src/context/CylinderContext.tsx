@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Cylinder {
   id: string;
@@ -34,23 +35,33 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const fetchCylinders = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching cylinders from:', `${API_URL}/cylinders`);
         // Try to fetch from API first
-        const response = await fetch(`${API_URL}/cylinders`);
+        const response = await fetch(`${API_URL}/cylinders`, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        console.log('API response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('Cylinders data:', data);
           setCylinders(data);
         } else {
+          console.warn('API returned non-OK status:', response.status);
           // Fall back to localStorage if API fails
           const savedCylinders = localStorage.getItem('cylinders');
           if (savedCylinders) {
             setCylinders(JSON.parse(savedCylinders));
           } else {
-            setCylinders([
-              { id: '1', name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800, gstRate: 5 },
-              { id: '2', name: '12kg', hsnSac: '27111900', defaultRate: 1200, gstRate: 5 },
-              { id: '3', name: '17kg', hsnSac: '27111900', defaultRate: 1700, gstRate: 5 },
-              { id: '4', name: '33kg', hsnSac: '27111900', defaultRate: 3300, gstRate: 5 },
-            ]);
+            // Initialize with default cylinders if neither API nor localStorage works
+            const defaultCylinders = [
+              { id: uuidv4(), name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800, gstRate: 5 },
+              { id: uuidv4(), name: '12kg', hsnSac: '27111900', defaultRate: 1200, gstRate: 5 },
+              { id: uuidv4(), name: '17kg', hsnSac: '27111900', defaultRate: 1700, gstRate: 5 },
+              { id: uuidv4(), name: '33kg', hsnSac: '27111900', defaultRate: 3300, gstRate: 5 },
+            ];
+            setCylinders(defaultCylinders);
+            localStorage.setItem('cylinders', JSON.stringify(defaultCylinders));
           }
         }
       } catch (error) {
@@ -60,12 +71,15 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (savedCylinders) {
           setCylinders(JSON.parse(savedCylinders));
         } else {
-          setCylinders([
-            { id: '1', name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800, gstRate: 5 },
-            { id: '2', name: '12kg', hsnSac: '27111900', defaultRate: 1200, gstRate: 5 },
-            { id: '3', name: '17kg', hsnSac: '27111900', defaultRate: 1700, gstRate: 5 },
-            { id: '4', name: '33kg', hsnSac: '27111900', defaultRate: 3300, gstRate: 5 },
-          ]);
+          // Initialize with default cylinders if neither API nor localStorage works
+          const defaultCylinders = [
+            { id: uuidv4(), name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800, gstRate: 5 },
+            { id: uuidv4(), name: '12kg', hsnSac: '27111900', defaultRate: 1200, gstRate: 5 },
+            { id: uuidv4(), name: '17kg', hsnSac: '27111900', defaultRate: 1700, gstRate: 5 },
+            { id: uuidv4(), name: '33kg', hsnSac: '27111900', defaultRate: 3300, gstRate: 5 },
+          ];
+          setCylinders(defaultCylinders);
+          localStorage.setItem('cylinders', JSON.stringify(defaultCylinders));
         }
       } finally {
         setIsLoading(false);
@@ -80,9 +94,12 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('cylinders', JSON.stringify(cylinders));
   }, [cylinders]);
 
-  const addCylinder = async (cylinder: Cylinder) => {
+  const addCylinder = async (cylinderData: Omit<Cylinder, 'id'>) => {
     try {
       setIsLoading(true);
+      
+      // Generate a unique ID for the new cylinder
+      const cylinder = { ...cylinderData, id: uuidv4() } as Cylinder;
       
       // Try to save to API first
       const response = await fetch(`${API_URL}/cylinders`, {
@@ -101,6 +118,7 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           description: 'Cylinder has been added successfully',
         });
       } else {
+        console.warn('API returned non-OK status when adding cylinder:', response.status);
         // Fall back to localStorage if API fails
         setCylinders([...cylinders, cylinder]);
         toast({
@@ -111,6 +129,8 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch (error) {
       console.error('Error adding cylinder:', error);
+      // Generate a unique ID for the new cylinder
+      const cylinder = { ...cylinderData, id: uuidv4() } as Cylinder;
       // Fall back to localStorage if API fails
       setCylinders([...cylinders, cylinder]);
       toast({
@@ -126,6 +146,7 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const updateCylinder = async (updatedCylinder: Cylinder) => {
     try {
       setIsLoading(true);
+      console.log('Updating cylinder:', updatedCylinder);
       
       // Try to update via API first
       const response = await fetch(`${API_URL}/cylinders/${updatedCylinder.id}`, {
@@ -135,6 +156,8 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         },
         body: JSON.stringify(updatedCylinder),
       });
+      
+      console.log('Update response status:', response.status);
       
       if (response.ok) {
         const updatedData = await response.json();
@@ -146,6 +169,7 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           description: 'Cylinder has been updated successfully',
         });
       } else {
+        console.warn('API returned non-OK status when updating cylinder:', response.status);
         // Fall back to localStorage if API fails
         setCylinders(cylinders.map(cylinder => 
           cylinder.id === updatedCylinder.id ? updatedCylinder : cylinder
@@ -175,11 +199,14 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const deleteCylinder = async (id: string) => {
     try {
       setIsLoading(true);
+      console.log('Deleting cylinder with ID:', id);
       
       // Try to delete via API first
       const response = await fetch(`${API_URL}/cylinders/${id}`, {
         method: 'DELETE',
       });
+      
+      console.log('Delete response status:', response.status);
       
       if (response.ok) {
         setCylinders(cylinders.filter(cylinder => cylinder.id !== id));
@@ -188,6 +215,7 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           description: 'Cylinder has been deleted successfully',
         });
       } else {
+        console.warn('API returned non-OK status when deleting cylinder:', response.status);
         // Fall back to localStorage if API fails
         setCylinders(cylinders.filter(cylinder => cylinder.id !== id));
         toast({
