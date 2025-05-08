@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Cylinder = require('../models/Cylinder');
 const mongoose = require('mongoose');
+const { v4: uuidv4 } = require('uuid');
 
 // Check MongoDB connection middleware
 const checkMongoConnection = (req, res, next) => {
@@ -71,15 +72,21 @@ router.post('/', checkMongoConnection, async (req, res) => {
       return res.status(400).json({ message: 'Cylinder name is required and cannot be empty' });
     }
     
-    // Generate a custom ID if not provided
-    if (!req.body.id) {
-      req.body.id = `CYL-${Date.now()}`;
-      console.log('Generated ID for new cylinder:', req.body.id);
+    // Generate a custom ID if not provided or ensure uniqueness
+    let cylinderId = req.body.id || `CYL-${Date.now()}-${uuidv4().substring(0, 8)}`;
+    
+    // Check if a cylinder with this ID already exists
+    const existingCylinder = await Cylinder.findOne({ id: cylinderId });
+    if (existingCylinder) {
+      cylinderId = `CYL-${Date.now()}-${uuidv4().substring(0, 8)}`;
+      console.log(`ID already exists, generated new ID: ${cylinderId}`);
     }
     
     // Ensure numeric fields are actually numbers
     const cylinderData = {
-      ...req.body,
+      id: cylinderId,
+      name: req.body.name.trim(),
+      hsnSac: req.body.hsnSac || '27111900',
       defaultRate: Number(req.body.defaultRate || 0),
       gstRate: Number(req.body.gstRate || 0)
     };
@@ -136,15 +143,18 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
     if (!cylinder) {
       console.log(`Cylinder with ID ${req.params.id} not found for update`);
       
-      // If cylinder doesn't exist, try to create it with the specified ID
+      // If cylinder doesn't exist and we have valid data, create it with the specified ID
       if (req.body.name && req.body.name.trim() !== '') {
         const newCylinder = new Cylinder({
-          ...req.body,
           id: req.params.id,
+          name: req.body.name.trim(),
+          hsnSac: req.body.hsnSac || '27111900',
           defaultRate: Number(req.body.defaultRate || 0),
           gstRate: Number(req.body.gstRate || 0)
         });
+        
         const createdCylinder = await newCylinder.save();
+        console.log('Created new cylinder during update:', createdCylinder);
         return res.status(201).json({
           ...createdCylinder.toObject(),
           message: 'Cylinder created as it did not exist'
@@ -158,14 +168,14 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
     }
     
     // Update the cylinder - ensure numeric fields are actually numbers
+    if (req.body.name !== undefined) {
+      cylinder.name = req.body.name.trim();
+    }
     if (req.body.defaultRate !== undefined) {
       cylinder.defaultRate = Number(req.body.defaultRate);
     }
     if (req.body.gstRate !== undefined) {
       cylinder.gstRate = Number(req.body.gstRate);
-    }
-    if (req.body.name !== undefined) {
-      cylinder.name = req.body.name;
     }
     if (req.body.hsnSac !== undefined) {
       cylinder.hsnSac = req.body.hsnSac;

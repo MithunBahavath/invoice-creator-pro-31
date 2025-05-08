@@ -30,21 +30,38 @@ if (!mongoURI) {
 
 // Connect to MongoDB with improved error handling
 mongoose.connect(mongoURI, {
-  dbName: 'billing' // Explicitly set the database name to 'billing'
+  dbName: 'billing', // Explicitly set the database name to 'billing'
+  // Add these options for more reliable connections
+  retryWrites: true,
+  w: 'majority',
+  serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
 })
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas successfully');
     console.log(`📊 Database: ${mongoose.connection.name}`);
+    console.log('📍 Network access: Your IP address has been whitelisted');
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err.message);
     console.error('Please check your MongoDB credentials and network connection.');
     console.error('URI format should be: mongodb+srv://username:password@cluster-url/database?options');
+    console.error('Make sure your IP address is whitelisted in MongoDB Atlas Network Access settings.');
   });
 
-// Add logging middleware
+// Add detailed logging middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  const requestTime = new Date().toISOString();
+  console.log(`${req.method} ${req.path} - ${requestTime}`);
+  
+  // Log request body for POST/PUT requests
+  if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
+    if (req.path.includes('/api/')) {
+      const bodyPreview = JSON.stringify(req.body).substring(0, 200);
+      console.log(`Request body: ${bodyPreview}${bodyPreview.length >= 200 ? '...' : ''}`);
+    }
+  }
+  
   next();
 });
 
@@ -56,7 +73,8 @@ app.get('/api/status', (req, res) => {
     env: {
       nodeEnv: process.env.NODE_ENV,
       mongoDbConfigured: Boolean(mongoURI),
-      database: mongoose.connection.name || 'not connected'
+      database: mongoose.connection.name || 'not connected',
+      ipAddress: req.ip || 'unknown'
     }
   });
 });
