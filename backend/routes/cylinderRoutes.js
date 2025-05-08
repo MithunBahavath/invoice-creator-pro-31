@@ -19,7 +19,9 @@ const checkMongoConnection = (req, res, next) => {
 // Get all cylinders
 router.get('/', checkMongoConnection, async (req, res) => {
   try {
+    console.log('Fetching all cylinders');
     const cylinders = await Cylinder.find();
+    console.log(`Found ${cylinders.length} cylinders`);
     res.json(cylinders);
   } catch (error) {
     console.error('Error fetching cylinders:', error);
@@ -30,13 +32,28 @@ router.get('/', checkMongoConnection, async (req, res) => {
 // Get single cylinder
 router.get('/:id', checkMongoConnection, async (req, res) => {
   try {
-    const cylinder = await Cylinder.findOne({ id: req.params.id });
+    console.log(`Fetching cylinder with ID: ${req.params.id}`);
+    
+    // First try finding by MongoDB ObjectId if it looks like one
+    let cylinder = null;
+    if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      cylinder = await Cylinder.findById(req.params.id);
+    }
+    
+    // If not found, try finding by the 'id' field
     if (!cylinder) {
+      cylinder = await Cylinder.findOne({ id: req.params.id });
+    }
+    
+    if (!cylinder) {
+      console.log(`Cylinder with ID ${req.params.id} not found`);
       return res.status(404).json({ 
         message: 'Cylinder not found', 
         requestedId: req.params.id 
       });
     }
+    
+    console.log('Cylinder found:', cylinder);
     res.json(cylinder);
   } catch (error) {
     console.error(`Error fetching cylinder ${req.params.id}:`, error);
@@ -49,12 +66,15 @@ router.post('/', checkMongoConnection, async (req, res) => {
   try {
     console.log('Creating cylinder with data:', req.body);
     
+    // Generate a custom ID if not provided
     if (!req.body.id) {
-      return res.status(400).json({ message: 'Cylinder ID is required' });
+      req.body.id = `CYL-${Date.now()}`;
+      console.log('Generated ID for new cylinder:', req.body.id);
     }
     
     const cylinder = new Cylinder(req.body);
     const newCylinder = await cylinder.save();
+    
     console.log('Created cylinder:', newCylinder);
     res.status(201).json(newCylinder);
   } catch (error) {
@@ -83,18 +103,33 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
   try {
     console.log(`Updating cylinder ${req.params.id} with:`, req.body);
     
-    const updatedCylinder = await Cylinder.findOneAndUpdate(
-      { id: req.params.id },
-      req.body,
-      { new: true, runValidators: true }
-    );
+    // First try to find the cylinder
+    let cylinder = null;
     
-    if (!updatedCylinder) {
+    // Try finding by MongoDB ObjectId if it looks like one
+    if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      cylinder = await Cylinder.findById(req.params.id);
+    }
+    
+    // If not found, try finding by the 'id' field
+    if (!cylinder) {
+      cylinder = await Cylinder.findOne({ id: req.params.id });
+    }
+    
+    if (!cylinder) {
+      console.log(`Cylinder with ID ${req.params.id} not found for update`);
       return res.status(404).json({ 
         message: 'Cylinder not found',
         requestedId: req.params.id
       });
     }
+    
+    // Update the cylinder
+    Object.keys(req.body).forEach(key => {
+      cylinder[key] = req.body[key];
+    });
+    
+    const updatedCylinder = await cylinder.save();
     
     console.log('Updated cylinder:', updatedCylinder);
     res.json(updatedCylinder);
@@ -117,16 +152,28 @@ router.delete('/:id', checkMongoConnection, async (req, res) => {
   try {
     console.log(`Deleting cylinder ${req.params.id}`);
     
-    const cylinder = await Cylinder.findOneAndDelete({ id: req.params.id });
-    if (!cylinder) {
+    let result = null;
+    
+    // Try deleting by MongoDB ObjectId if it looks like one
+    if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      result = await Cylinder.findByIdAndDelete(req.params.id);
+    }
+    
+    // If not found, try deleting by the 'id' field
+    if (!result) {
+      result = await Cylinder.findOneAndDelete({ id: req.params.id });
+    }
+    
+    if (!result) {
+      console.log(`Cylinder with ID ${req.params.id} not found for deletion`);
       return res.status(404).json({ 
         message: 'Cylinder not found',
         requestedId: req.params.id
       });
     }
     
-    console.log('Deleted cylinder:', cylinder);
-    res.json({ message: 'Cylinder deleted', deletedCylinder: cylinder });
+    console.log('Deleted cylinder:', result);
+    res.json({ message: 'Cylinder deleted', deletedCylinder: result });
   } catch (error) {
     console.error(`Error deleting cylinder ${req.params.id}:`, error);
     res.status(500).json({ message: error.message });
