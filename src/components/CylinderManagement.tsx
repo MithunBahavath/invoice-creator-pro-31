@@ -22,7 +22,7 @@ type CylinderEditForm = Partial<Cylinder> & {
 };
 
 const CylinderManagement = () => {
-  const { cylinders, addCylinder, updateCylinder, deleteCylinder } = useCylinders();
+  const { cylinders, addCylinder, updateCylinder, deleteCylinder, isLoading } = useCylinders();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<CylinderEditForm>({});
 
@@ -37,8 +37,8 @@ const CylinderManagement = () => {
       return;
     }
     
-    // Fix: Change the comparison to check for undefined or empty string
-    if (editForm.defaultRate === undefined || editForm.defaultRate === '') {
+    // Check if defaultRate is undefined, null, or empty string
+    if (editForm.defaultRate === undefined || editForm.defaultRate === null || editForm.defaultRate === '') {
       toast.error('Default rate is required');
       return;
     }
@@ -92,105 +92,113 @@ const CylinderManagement = () => {
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Cylinder Management</h2>
-          <Button onClick={handleAdd}>
+          <Button onClick={handleAdd} disabled={isLoading}>
             <Plus className="h-4 w-4 mr-2" />
             Add New Cylinder
           </Button>
         </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>HSN/SAC</TableHead>
-                <TableHead>Default Rate</TableHead>
-                <TableHead>GST Rate (%)</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {cylinders.map(cylinder => (
-                <TableRow key={cylinder.id}>
-                  {editingId === cylinder.id ? (
-                    <>
-                      <TableCell>
-                        <Input
-                          value={editForm.name || ''}
-                          onChange={e => setEditForm(current => ({ ...current, name: e.target.value }))}
-                          placeholder="e.g. 10kg Cylinder"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          value={editForm.hsnSac || '27111900'}
-                          onChange={e => setEditForm(current => ({ ...current, hsnSac: e.target.value }))}
-                          placeholder="HSN/SAC code"
-                          readOnly
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          value={editForm.defaultRate === 0 || editForm.defaultRate ? editForm.defaultRate : ''}
-                          onFocus={handleInputFocus}
-                          onChange={e => setEditForm((current) => ({ 
-                            ...current, 
-                            defaultRate: e.target.value === '' ? '' : e.target.value 
-                          }) as CylinderEditForm)}
-                          placeholder="Default rate"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          value={editForm.gstRate === 0 || editForm.gstRate ? editForm.gstRate : ''}
-                          onFocus={handleInputFocus}
-                          onChange={e => setEditForm((current) => ({ 
-                            ...current, 
-                            gstRate: e.target.value === '' ? '' : e.target.value 
-                          }) as CylinderEditForm)}
-                          placeholder="GST rate"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleSave(cylinder)}>
-                            <Save className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={handleCancel}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </>
-                  ) : (
-                    <>
-                      <TableCell>{cylinder.name}</TableCell>
-                      <TableCell>{cylinder.hsnSac}</TableCell>
-                      <TableCell>₹{cylinder.defaultRate.toFixed(2)}</TableCell>
-                      <TableCell>{cylinder.gstRate}%</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(cylinder)}>
-                            Edit
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleDelete(cylinder.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </>
-                  )}
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="ml-2">Loading...</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>HSN/SAC</TableHead>
+                  <TableHead>Default Rate</TableHead>
+                  <TableHead>GST Rate (%)</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {cylinders.map(cylinder => (
+                  <TableRow key={cylinder.id}>
+                    {editingId === cylinder.id ? (
+                      <>
+                        <TableCell>
+                          <Input
+                            value={editForm.name || ''}
+                            onChange={e => setEditForm(current => ({ ...current, name: e.target.value }))}
+                            placeholder="e.g. 10kg Cylinder"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={editForm.hsnSac || '27111900'}
+                            onChange={e => setEditForm(current => ({ ...current, hsnSac: e.target.value }))}
+                            placeholder="HSN/SAC code"
+                            readOnly
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={editForm.defaultRate === 0 || editForm.defaultRate ? editForm.defaultRate : ''}
+                            onFocus={handleInputFocus}
+                            onChange={e => setEditForm((current) => ({ 
+                              ...current, 
+                              defaultRate: e.target.value === '' ? '' : e.target.value 
+                            }) as CylinderEditForm)}
+                            placeholder="Default rate"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={editForm.gstRate === 0 || editForm.gstRate ? editForm.gstRate : ''}
+                            onFocus={handleInputFocus}
+                            onChange={e => setEditForm((current) => ({ 
+                              ...current, 
+                              gstRate: e.target.value === '' ? '' : e.target.value 
+                            }) as CylinderEditForm)}
+                            placeholder="GST rate"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleSave(cylinder)}>
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={handleCancel}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell>{cylinder.name}</TableCell>
+                        <TableCell>{cylinder.hsnSac}</TableCell>
+                        <TableCell>₹{cylinder.defaultRate.toFixed(2)}</TableCell>
+                        <TableCell>{cylinder.gstRate}%</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleEdit(cylinder)}>
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDelete(cylinder.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

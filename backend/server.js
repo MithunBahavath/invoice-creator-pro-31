@@ -21,33 +21,62 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Check if MongoDB URI is properly configured
-const mongoURI = process.env.MONGODB_URI;
-if (!mongoURI) {
-  console.error('ERROR: MongoDB connection string is not configured in .env file!');
-  process.exit(1);
-}
+// MongoDB Connection - Using a more robust approach
+const connectToMongoDB = async () => {
+  try {
+    // Check if MongoDB URI is properly configured
+    const mongoURI = process.env.MONGODB_URI;
+    if (!mongoURI) {
+      console.error('ERROR: MongoDB connection string is not configured in .env file!');
+      process.exit(1);
+    }
 
-// Connect to MongoDB with improved error handling
-mongoose.connect(mongoURI, {
-  dbName: 'billing', // Explicitly set the database name to 'billing'
-  // Add these options for more reliable connections
-  retryWrites: true,
-  w: 'majority',
-  serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
-  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-})
-  .then(() => {
+    // Configure mongoose connection options
+    const options = {
+      dbName: 'billing',
+      retryWrites: true,
+      w: 'majority',
+      serverSelectionTimeoutMS: 30000, // Increased timeout to 30 seconds
+      socketTimeoutMS: 45000,
+      family: 4 // Use IPv4, avoid IPv6 issues
+    };
+
+    // Connect with robust error handling
+    await mongoose.connect(process.env.MONGODB_URI, options);
+
     console.log('✅ Connected to MongoDB Atlas successfully');
-    console.log(`📊 Database: ${mongoose.connection.name}`);
+    console.log(`📊 Database: ${mongoose.connection.db.databaseName}`);
     console.log('📍 Network access: Your IP address has been whitelisted');
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
-    console.error('Please check your MongoDB credentials and network connection.');
-    console.error('URI format should be: mongodb+srv://username:password@cluster-url/database?options');
-    console.error('Make sure your IP address is whitelisted in MongoDB Atlas Network Access settings.');
-  });
+
+    // Set up connection event listeners
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ MongoDB connection error:', err);
+      // Don't exit the process on transient errors
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      console.warn('⚠️ MongoDB disconnected, attempting to reconnect...');
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      console.log('✅ MongoDB reconnected successfully');
+    });
+
+  } catch (error) {
+    console.error('❌ Failed to connect to MongoDB:', error.message);
+    console.error('Please check:');
+    console.error('1. Your MongoDB credentials are correct');
+    console.error('2. Your IP address is whitelisted in MongoDB Atlas Network Access');
+    console.error('3. The MongoDB Atlas cluster is running');
+    console.error('4. The connection string format is correct');
+    
+    // Exit with failure
+    process.exit(1);
+  }
+};
+
+// Try to connect to MongoDB
+connectToMongoDB();
 
 // Add detailed logging middleware
 app.use((req, res, next) => {
@@ -72,8 +101,8 @@ app.get('/api/status', (req, res) => {
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     env: {
       nodeEnv: process.env.NODE_ENV,
-      mongoDbConfigured: Boolean(mongoURI),
-      database: mongoose.connection.name || 'not connected',
+      mongoDbConfigured: Boolean(process.env.MONGODB_URI),
+      database: mongoose.connection.db ? mongoose.connection.db.databaseName : 'not connected',
       ipAddress: req.ip || 'unknown'
     }
   });

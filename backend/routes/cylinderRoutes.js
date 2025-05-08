@@ -21,7 +21,7 @@ const checkMongoConnection = (req, res, next) => {
 router.get('/', checkMongoConnection, async (req, res) => {
   try {
     console.log('Fetching all cylinders');
-    const cylinders = await Cylinder.find();
+    const cylinders = await Cylinder.find().sort({ updatedAt: -1 });
     console.log(`Found ${cylinders.length} cylinders`);
     res.json(cylinders);
   } catch (error) {
@@ -72,29 +72,25 @@ router.post('/', checkMongoConnection, async (req, res) => {
       return res.status(400).json({ message: 'Cylinder name is required and cannot be empty' });
     }
     
-    // Generate a custom ID if not provided or ensure uniqueness
-    let cylinderId = req.body.id || `CYL-${Date.now()}-${uuidv4().substring(0, 8)}`;
+    // Generate a custom ID that's more readable and unique
+    const cylinderId = req.body.id || `CYL-${Date.now().toString().slice(-6)}-${uuidv4().slice(0, 4)}`;
     
-    // Check if a cylinder with this ID already exists
-    const existingCylinder = await Cylinder.findOne({ id: cylinderId });
-    if (existingCylinder) {
-      cylinderId = `CYL-${Date.now()}-${uuidv4().substring(0, 8)}`;
-      console.log(`ID already exists, generated new ID: ${cylinderId}`);
-    }
-    
-    // Ensure numeric fields are actually numbers
+    // Prepare cylinder data with proper number conversion
     const cylinderData = {
       id: cylinderId,
       name: req.body.name.trim(),
       hsnSac: req.body.hsnSac || '27111900',
-      defaultRate: Number(req.body.defaultRate || 0),
-      gstRate: Number(req.body.gstRate || 0)
+      defaultRate: parseFloat(req.body.defaultRate || 0),
+      gstRate: parseFloat(req.body.gstRate || 5)
     };
     
+    // Create the new document
     const cylinder = new Cylinder(cylinderData);
+    
+    // Save with explicit error handling
     const newCylinder = await cylinder.save();
     
-    console.log('Created cylinder:', newCylinder);
+    console.log('Created cylinder with ID:', newCylinder.id);
     res.status(201).json(newCylinder);
   } catch (error) {
     console.error('Error creating cylinder:', error);
@@ -149,8 +145,8 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
           id: req.params.id,
           name: req.body.name.trim(),
           hsnSac: req.body.hsnSac || '27111900',
-          defaultRate: Number(req.body.defaultRate || 0),
-          gstRate: Number(req.body.gstRate || 0)
+          defaultRate: parseFloat(req.body.defaultRate || 0),
+          gstRate: parseFloat(req.body.gstRate || 5)
         });
         
         const createdCylinder = await newCylinder.save();
@@ -167,15 +163,15 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
       });
     }
     
-    // Update the cylinder - ensure numeric fields are actually numbers
+    // Update the cylinder with proper number conversion
     if (req.body.name !== undefined) {
       cylinder.name = req.body.name.trim();
     }
     if (req.body.defaultRate !== undefined) {
-      cylinder.defaultRate = Number(req.body.defaultRate);
+      cylinder.defaultRate = parseFloat(req.body.defaultRate);
     }
     if (req.body.gstRate !== undefined) {
-      cylinder.gstRate = Number(req.body.gstRate);
+      cylinder.gstRate = parseFloat(req.body.gstRate);
     }
     if (req.body.hsnSac !== undefined) {
       cylinder.hsnSac = req.body.hsnSac;
