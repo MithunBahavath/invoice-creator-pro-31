@@ -66,13 +66,25 @@ router.post('/', checkMongoConnection, async (req, res) => {
   try {
     console.log('Creating cylinder with data:', req.body);
     
+    // Basic validation
+    if (!req.body.name || req.body.name.trim() === '') {
+      return res.status(400).json({ message: 'Cylinder name is required and cannot be empty' });
+    }
+    
     // Generate a custom ID if not provided
     if (!req.body.id) {
       req.body.id = `CYL-${Date.now()}`;
       console.log('Generated ID for new cylinder:', req.body.id);
     }
     
-    const cylinder = new Cylinder(req.body);
+    // Ensure numeric fields are actually numbers
+    const cylinderData = {
+      ...req.body,
+      defaultRate: Number(req.body.defaultRate || 0),
+      gstRate: Number(req.body.gstRate || 0)
+    };
+    
+    const cylinder = new Cylinder(cylinderData);
     const newCylinder = await cylinder.save();
     
     console.log('Created cylinder:', newCylinder);
@@ -103,6 +115,11 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
   try {
     console.log(`Updating cylinder ${req.params.id} with:`, req.body);
     
+    // Basic validation
+    if (req.body.name !== undefined && req.body.name.trim() === '') {
+      return res.status(400).json({ message: 'Cylinder name cannot be empty' });
+    }
+    
     // First try to find the cylinder
     let cylinder = null;
     
@@ -118,16 +135,41 @@ router.put('/:id', checkMongoConnection, async (req, res) => {
     
     if (!cylinder) {
       console.log(`Cylinder with ID ${req.params.id} not found for update`);
+      
+      // If cylinder doesn't exist, try to create it with the specified ID
+      if (req.body.name && req.body.name.trim() !== '') {
+        const newCylinder = new Cylinder({
+          ...req.body,
+          id: req.params.id,
+          defaultRate: Number(req.body.defaultRate || 0),
+          gstRate: Number(req.body.gstRate || 0)
+        });
+        const createdCylinder = await newCylinder.save();
+        return res.status(201).json({
+          ...createdCylinder.toObject(),
+          message: 'Cylinder created as it did not exist'
+        });
+      }
+      
       return res.status(404).json({ 
         message: 'Cylinder not found',
         requestedId: req.params.id
       });
     }
     
-    // Update the cylinder
-    Object.keys(req.body).forEach(key => {
-      cylinder[key] = req.body[key];
-    });
+    // Update the cylinder - ensure numeric fields are actually numbers
+    if (req.body.defaultRate !== undefined) {
+      cylinder.defaultRate = Number(req.body.defaultRate);
+    }
+    if (req.body.gstRate !== undefined) {
+      cylinder.gstRate = Number(req.body.gstRate);
+    }
+    if (req.body.name !== undefined) {
+      cylinder.name = req.body.name;
+    }
+    if (req.body.hsnSac !== undefined) {
+      cylinder.hsnSac = req.body.hsnSac;
+    }
     
     const updatedCylinder = await cylinder.save();
     

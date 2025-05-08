@@ -32,8 +32,13 @@ const CylinderManagement = () => {
   };
 
   const handleSave = (cylinder: Cylinder) => {
-    if (!editForm.name || editForm.defaultRate === undefined) {
-      toast.error('Name and rate are required');
+    if (!editForm.name || editForm.name.trim() === '') {
+      toast.error('Name is required and cannot be empty');
+      return;
+    }
+    
+    if (editForm.defaultRate === undefined || editForm.defaultRate === '') {
+      toast.error('Default rate is required');
       return;
     }
     
@@ -52,7 +57,6 @@ const CylinderManagement = () => {
     
     setEditingId(null);
     setEditForm({});
-    toast.success('Cylinder updated successfully');
   };
 
   const handleCancel = () => {
@@ -61,16 +65,13 @@ const CylinderManagement = () => {
   };
 
   const handleAdd = () => {
-    const newCylinder: Cylinder = {
-      id: Date.now().toString(),
-      name: '',
+    const newCylinder = {
+      name: '8kg Cylinder',  // Provide a default name
       hsnSac: '27111900',
-      defaultRate: 0,
+      defaultRate: 800,
       gstRate: 5
     };
     addCylinder(newCylinder);
-    setEditingId(newCylinder.id);
-    setEditForm(newCylinder);
   };
 
   const handleDelete = (id: string) => {

@@ -33,7 +33,18 @@ router.get('/', checkMongoConnection, async (req, res) => {
 router.get('/:gstin', checkMongoConnection, async (req, res) => {
   try {
     console.log(`Fetching buyer with GSTIN: ${req.params.gstin}`);
-    const buyer = await Buyer.findOne({ gstin: req.params.gstin });
+    
+    let buyer = null;
+    
+    // Try finding by MongoDB ObjectId if it looks like one
+    if (req.params.gstin.match(/^[0-9a-fA-F]{24}$/)) {
+      buyer = await Buyer.findById(req.params.gstin);
+    }
+    
+    // If not found by ID, try by GSTIN
+    if (!buyer) {
+      buyer = await Buyer.findOne({ gstin: req.params.gstin });
+    }
     
     if (!buyer) {
       console.log(`Buyer with GSTIN ${req.params.gstin} not found`);
@@ -56,15 +67,25 @@ router.post('/', checkMongoConnection, async (req, res) => {
   try {
     console.log('Creating buyer with data:', req.body);
     
-    if (!req.body.gstin) {
-      return res.status(400).json({ message: 'GSTIN is required' });
+    // Validate required fields
+    if (!req.body.gstin || !req.body.gstin.trim()) {
+      return res.status(400).json({ message: 'GSTIN is required and cannot be empty' });
     }
     
-    if (!req.body.name) {
-      return res.status(400).json({ message: 'Name is required' });
+    if (!req.body.name || !req.body.name.trim()) {
+      return res.status(400).json({ message: 'Name is required and cannot be empty' });
     }
     
-    const buyer = new Buyer(req.body);
+    // Set default values for optional fields
+    const buyerData = {
+      gstin: req.body.gstin,
+      name: req.body.name,
+      address: req.body.address || '',
+      state: req.body.state || 'Tamil Nadu',
+      stateCode: req.body.stateCode || '33'
+    };
+    
+    const buyer = new Buyer(buyerData);
     const newBuyer = await buyer.save();
     
     console.log('Created buyer:', newBuyer);
@@ -95,20 +116,50 @@ router.put('/:gstin', checkMongoConnection, async (req, res) => {
   try {
     console.log(`Updating buyer ${req.params.gstin} with:`, req.body);
     
-    const buyer = await Buyer.findOne({ gstin: req.params.gstin });
+    let buyer = null;
+    
+    // Try finding by MongoDB ObjectId if it looks like one
+    if (req.params.gstin.match(/^[0-9a-fA-F]{24}$/)) {
+      buyer = await Buyer.findById(req.params.gstin);
+    }
+    
+    // If not found by ID, try by GSTIN
+    if (!buyer) {
+      buyer = await Buyer.findOne({ gstin: req.params.gstin });
+    }
     
     if (!buyer) {
       console.log(`Buyer with GSTIN ${req.params.gstin} not found for update`);
+      
+      // If the buyer doesn't exist and we have required fields, create it
+      if (req.body.name && req.body.name.trim() !== '' && req.body.gstin && req.body.gstin.trim() !== '') {
+        const newBuyer = new Buyer({
+          gstin: req.body.gstin || req.params.gstin,
+          name: req.body.name,
+          address: req.body.address || '',
+          state: req.body.state || 'Tamil Nadu',
+          stateCode: req.body.stateCode || '33'
+        });
+        
+        const createdBuyer = await newBuyer.save();
+        return res.status(201).json({
+          ...createdBuyer.toObject(),
+          message: 'Buyer created as it did not exist'
+        });
+      }
+      
       return res.status(404).json({ 
         message: 'Buyer not found',
         requestedGstin: req.params.gstin
       });
     }
     
-    // Update the buyer
-    Object.keys(req.body).forEach(key => {
-      buyer[key] = req.body[key];
-    });
+    // Update the buyer fields
+    if (req.body.name !== undefined) buyer.name = req.body.name;
+    if (req.body.address !== undefined) buyer.address = req.body.address;
+    if (req.body.state !== undefined) buyer.state = req.body.state;
+    if (req.body.stateCode !== undefined) buyer.stateCode = req.body.stateCode;
+    if (req.body.gstin !== undefined) buyer.gstin = req.body.gstin;
     
     const updatedBuyer = await buyer.save();
     
@@ -133,7 +184,17 @@ router.delete('/:gstin', checkMongoConnection, async (req, res) => {
   try {
     console.log(`Deleting buyer ${req.params.gstin}`);
     
-    const result = await Buyer.findOneAndDelete({ gstin: req.params.gstin });
+    let result = null;
+    
+    // Try deleting by MongoDB ObjectId if it looks like one
+    if (req.params.gstin.match(/^[0-9a-fA-F]{24}$/)) {
+      result = await Buyer.findByIdAndDelete(req.params.gstin);
+    }
+    
+    // If not found by ID, try by GSTIN
+    if (!result) {
+      result = await Buyer.findOneAndDelete({ gstin: req.params.gstin });
+    }
     
     if (!result) {
       console.log(`Buyer with GSTIN ${req.params.gstin} not found for deletion`);

@@ -29,7 +29,9 @@ if (!mongoURI) {
 }
 
 // Connect to MongoDB with improved error handling
-mongoose.connect(mongoURI)
+mongoose.connect(mongoURI, {
+  dbName: 'billing' // Explicitly set the database name to 'billing'
+})
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas successfully');
     console.log(`📊 Database: ${mongoose.connection.name}`);

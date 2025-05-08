@@ -13,7 +13,7 @@ export interface Cylinder {
 
 interface CylinderContextType {
   cylinders: Cylinder[];
-  addCylinder: (cylinder: Cylinder) => void;
+  addCylinder: (cylinder: Omit<Cylinder, "id">) => void;
   updateCylinder: (cylinder: Cylinder) => void;
   deleteCylinder: (id: string) => void;
   isLoading: boolean;
@@ -94,12 +94,23 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('cylinders', JSON.stringify(cylinders));
   }, [cylinders]);
 
-  const addCylinder = async (cylinderData: Omit<Cylinder, 'id'>) => {
+  const addCylinder = async (cylinderData: Omit<Cylinder, "id">) => {
     try {
       setIsLoading(true);
       
+      // Make sure name field is not empty
+      if (!cylinderData.name || cylinderData.name.trim() === '') {
+        toast({
+          title: 'Validation Error',
+          description: 'Cylinder name is required',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+      
       // Generate a unique ID for the new cylinder
-      const cylinder = { ...cylinderData, id: uuidv4() } as Cylinder;
+      const cylinder = { ...cylinderData, id: Date.now().toString() } as Cylinder;
       
       // Try to save to API first
       const response = await fetch(`${API_URL}/cylinders`, {
@@ -119,18 +130,24 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       } else {
         console.warn('API returned non-OK status when adding cylinder:', response.status);
+        
+        // Try to get more detailed error information
+        const errorData = await response.json().catch(() => ({
+          message: 'Could not save to server'
+        }));
+        
         // Fall back to localStorage if API fails
         setCylinders([...cylinders, cylinder]);
         toast({
           title: 'Warning',
-          description: 'Could not save to server, saved locally',
+          description: `Server error: ${errorData.message || 'Could not save to server'}, saved locally`,
           variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Error adding cylinder:', error);
       // Generate a unique ID for the new cylinder
-      const cylinder = { ...cylinderData, id: uuidv4() } as Cylinder;
+      const cylinder = { ...cylinderData, id: Date.now().toString() } as Cylinder;
       // Fall back to localStorage if API fails
       setCylinders([...cylinders, cylinder]);
       toast({
@@ -147,6 +164,17 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       setIsLoading(true);
       console.log('Updating cylinder:', updatedCylinder);
+      
+      // Validation
+      if (!updatedCylinder.name || updatedCylinder.name.trim() === '') {
+        toast({
+          title: 'Validation Error',
+          description: 'Cylinder name is required',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
       
       // Try to update via API first
       const response = await fetch(`${API_URL}/cylinders/${updatedCylinder.id}`, {
@@ -170,13 +198,19 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       } else {
         console.warn('API returned non-OK status when updating cylinder:', response.status);
+        
+        // Try to get more detailed error information
+        const errorData = await response.json().catch(() => ({
+          message: 'Could not update on server'
+        }));
+        
         // Fall back to localStorage if API fails
         setCylinders(cylinders.map(cylinder => 
           cylinder.id === updatedCylinder.id ? updatedCylinder : cylinder
         ));
         toast({
           title: 'Warning',
-          description: 'Could not update on server, updated locally',
+          description: `Server error: ${errorData.message || 'Could not update on server'}, updated locally`,
           variant: 'destructive',
         });
       }
@@ -216,11 +250,17 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       } else {
         console.warn('API returned non-OK status when deleting cylinder:', response.status);
+        
+        // Try to get more detailed error information
+        const errorData = await response.json().catch(() => ({
+          message: 'Could not delete from server'
+        }));
+        
         // Fall back to localStorage if API fails
         setCylinders(cylinders.filter(cylinder => cylinder.id !== id));
         toast({
           title: 'Warning',
-          description: 'Could not delete from server, deleted locally',
+          description: `Server error: ${errorData.message || 'Could not delete from server'}, deleted locally`,
           variant: 'destructive',
         });
       }
