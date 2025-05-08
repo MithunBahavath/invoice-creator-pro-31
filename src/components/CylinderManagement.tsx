@@ -37,6 +37,7 @@ const CylinderManagement = () => {
       return;
     }
     
+    // Fix: Change the comparison to check for undefined or empty string
     if (editForm.defaultRate === undefined || editForm.defaultRate === '') {
       toast.error('Default rate is required');
       return;
