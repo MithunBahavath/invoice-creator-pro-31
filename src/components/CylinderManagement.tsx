@@ -19,12 +19,24 @@ import { useCylinders, Cylinder } from '@/context/CylinderContext';
 type CylinderEditForm = Partial<Cylinder> & { 
   defaultRate?: string | number;
   gstRate?: string | number;
+  petBottlesRate?: string | number;
 };
 
 const CylinderManagement = () => {
   const { cylinders, addCylinder, updateCylinder, deleteCylinder, isLoading } = useCylinders();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<CylinderEditForm>({});
+
+  // Function to generate next cylinder name
+  const generateNextCylinderName = () => {
+    const existingNumbers = cylinders
+      .map(c => c.name.match(/Cylinder (\d+)/))
+      .filter(match => match)
+      .map(match => parseInt(match![1], 10));
+    
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    return `Cylinder ${nextNumber.toString().padStart(3, '0')}`;
+  };
 
   const handleEdit = (cylinder: Cylinder) => {
     setEditingId(cylinder.id);
@@ -49,7 +61,8 @@ const CylinderManagement = () => {
       ...editForm, 
       hsnSac: editForm.hsnSac || '27111900',
       defaultRate: Number(editForm.defaultRate),
-      gstRate: Number(editForm.gstRate || 5)
+      gstRate: Number(editForm.gstRate || 5),
+      petBottlesRate: Number(editForm.petBottlesRate || 0)
     };
 
     if (cylinder.id === editingId) {
@@ -67,10 +80,11 @@ const CylinderManagement = () => {
 
   const handleAdd = () => {
     const newCylinder = {
-      name: '8kg Cylinder',  // Provide a default name
+      name: generateNextCylinderName(),
       hsnSac: '27111900',
       defaultRate: 800,
-      gstRate: 5
+      gstRate: 5,
+      petBottlesRate: 0
     };
     addCylinder(newCylinder);
   };
@@ -112,6 +126,7 @@ const CylinderManagement = () => {
                   <TableHead>HSN/SAC</TableHead>
                   <TableHead>Default Rate</TableHead>
                   <TableHead>GST Rate (%)</TableHead>
+                  <TableHead>PET Bottles Rate</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -124,7 +139,7 @@ const CylinderManagement = () => {
                           <Input
                             value={editForm.name || ''}
                             onChange={e => setEditForm(current => ({ ...current, name: e.target.value }))}
-                            placeholder="e.g. 10kg Cylinder"
+                            placeholder="e.g. Cylinder 001"
                           />
                         </TableCell>
                         <TableCell>
@@ -160,6 +175,18 @@ const CylinderManagement = () => {
                           />
                         </TableCell>
                         <TableCell>
+                          <Input
+                            type="number"
+                            value={editForm.petBottlesRate !== undefined && editForm.petBottlesRate !== null ? editForm.petBottlesRate : ''}
+                            onFocus={handleInputFocus}
+                            onChange={e => setEditForm((current) => ({ 
+                              ...current, 
+                              petBottlesRate: e.target.value === '' ? '' : e.target.value 
+                            }) as CylinderEditForm)}
+                            placeholder="PET bottles rate"
+                          />
+                        </TableCell>
+                        <TableCell>
                           <div className="flex gap-2">
                             <Button variant="ghost" size="sm" onClick={() => handleSave(cylinder)}>
                               <Save className="h-4 w-4" />
@@ -176,6 +203,7 @@ const CylinderManagement = () => {
                         <TableCell>{cylinder.hsnSac}</TableCell>
                         <TableCell>₹{cylinder.defaultRate.toFixed(2)}</TableCell>
                         <TableCell>{cylinder.gstRate}%</TableCell>
+                        <TableCell>₹{(cylinder.petBottlesRate || 0).toFixed(2)}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button variant="ghost" size="sm" onClick={() => handleEdit(cylinder)}>
@@ -202,28 +230,6 @@ const CylinderManagement = () => {
       </CardContent>
     </Card>
   );
-};
-
-const handleCancel = () => {
-  setEditingId(null);
-  setEditForm({});
-};
-
-const handleAdd = () => {
-  const newCylinder = {
-    name: '8kg Cylinder',  // Provide a default name
-    hsnSac: '27111900',
-    defaultRate: 800,
-    gstRate: 5
-  };
-  addCylinder(newCylinder);
-};
-
-const handleDelete = (id: string) => {
-  if (window.confirm('Are you sure you want to delete this cylinder? This action cannot be undone.')) {
-    deleteCylinder(id);
-    toast.success('Cylinder deleted successfully');
-  }
 };
 
 export default CylinderManagement;

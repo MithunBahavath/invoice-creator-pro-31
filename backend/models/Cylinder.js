@@ -30,6 +30,11 @@ const CylinderSchema = new mongoose.Schema({
     default: 5,
     min: 0,
     max: 100
+  },
+  petBottlesRate: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, { 
   timestamps: true,
@@ -48,6 +53,7 @@ const CylinderSchema = new mongoose.Schema({
 CylinderSchema.pre('save', function(next) {
   if (this.defaultRate) this.defaultRate = Number(this.defaultRate);
   if (this.gstRate) this.gstRate = Number(this.gstRate);
+  if (this.petBottlesRate) this.petBottlesRate = Number(this.petBottlesRate);
   next();
 });
 

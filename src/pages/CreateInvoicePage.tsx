@@ -6,6 +6,7 @@ import { useReactToPrint } from 'react-to-print';
 import { toast } from '@/components/ui/use-toast';
 import { ChevronLeft, Save } from 'lucide-react';
 import InvoiceForm from '@/components/InvoiceForm';
+import ShareInvoice from '@/components/ShareInvoice';
 import { useInvoice } from '@/context/InvoiceContext';
 import InvoicePrint from '@/components/InvoicePrint';
 
@@ -54,6 +55,12 @@ const CreateInvoicePage: React.FC = () => {
             <h1 className="text-2xl font-bold">Create Invoice</h1>
           </div>
           <div className="flex items-center gap-2">
+            {currentInvoice.invoiceNo && currentInvoice.buyerName && (
+              <ShareInvoice 
+                invoice={currentInvoice} 
+                onDownloadPDF={handlePrint}
+              />
+            )}
             <Link to="/invoice-history">
               <Button variant="secondary" disabled={isLoading}>
                 <Save className="h-4 w-4 mr-2" />

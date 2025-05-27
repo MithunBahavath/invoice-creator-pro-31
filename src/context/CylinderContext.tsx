@@ -9,6 +9,7 @@ export interface Cylinder {
   hsnSac: string;
   defaultRate: number;
   gstRate: number;
+  petBottlesRate?: number;
 }
 
 interface CylinderContextType {
@@ -29,6 +30,17 @@ const CylinderContext = createContext<CylinderContextType | undefined>(undefined
 export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cylinders, setCylinders] = useState<Cylinder[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Generate next cylinder name function
+  const generateNextCylinderName = (existingCylinders: Cylinder[]) => {
+    const existingNumbers = existingCylinders
+      .map(c => c.name.match(/Cylinder (\d+)/))
+      .filter(match => match)
+      .map(match => parseInt(match![1], 10));
+    
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    return `Cylinder ${nextNumber.toString().padStart(3, '0')}`;
+  };
 
   // Fetch cylinders from backend
   useEffect(() => {
@@ -55,10 +67,10 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           } else {
             // Initialize with default cylinders if neither API nor localStorage works
             const defaultCylinders = [
-              { id: uuidv4(), name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800, gstRate: 5 },
-              { id: uuidv4(), name: '12kg', hsnSac: '27111900', defaultRate: 1200, gstRate: 5 },
-              { id: uuidv4(), name: '17kg', hsnSac: '27111900', defaultRate: 1700, gstRate: 5 },
-              { id: uuidv4(), name: '33kg', hsnSac: '27111900', defaultRate: 3300, gstRate: 5 },
+              { id: uuidv4(), name: 'Cylinder 001', hsnSac: '27111900', defaultRate: 800, gstRate: 5, petBottlesRate: 0 },
+              { id: uuidv4(), name: 'Cylinder 002', hsnSac: '27111900', defaultRate: 1200, gstRate: 5, petBottlesRate: 0 },
+              { id: uuidv4(), name: 'Cylinder 003', hsnSac: '27111900', defaultRate: 1700, gstRate: 5, petBottlesRate: 0 },
+              { id: uuidv4(), name: 'Cylinder 004', hsnSac: '27111900', defaultRate: 3300, gstRate: 5, petBottlesRate: 0 },
             ];
             setCylinders(defaultCylinders);
             localStorage.setItem('cylinders', JSON.stringify(defaultCylinders));
@@ -73,10 +85,10 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         } else {
           // Initialize with default cylinders if neither API nor localStorage works
           const defaultCylinders = [
-            { id: uuidv4(), name: '8kg Cylinder', hsnSac: '27111900', defaultRate: 800, gstRate: 5 },
-            { id: uuidv4(), name: '12kg', hsnSac: '27111900', defaultRate: 1200, gstRate: 5 },
-            { id: uuidv4(), name: '17kg', hsnSac: '27111900', defaultRate: 1700, gstRate: 5 },
-            { id: uuidv4(), name: '33kg', hsnSac: '27111900', defaultRate: 3300, gstRate: 5 },
+            { id: uuidv4(), name: 'Cylinder 001', hsnSac: '27111900', defaultRate: 800, gstRate: 5, petBottlesRate: 0 },
+            { id: uuidv4(), name: 'Cylinder 002', hsnSac: '27111900', defaultRate: 1200, gstRate: 5, petBottlesRate: 0 },
+            { id: uuidv4(), name: 'Cylinder 003', hsnSac: '27111900', defaultRate: 1700, gstRate: 5, petBottlesRate: 0 },
+            { id: uuidv4(), name: 'Cylinder 004', hsnSac: '27111900', defaultRate: 3300, gstRate: 5, petBottlesRate: 0 },
           ];
           setCylinders(defaultCylinders);
           localStorage.setItem('cylinders', JSON.stringify(defaultCylinders));
@@ -98,19 +110,19 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       setIsLoading(true);
       
-      // Make sure name field is not empty
-      if (!cylinderData.name || cylinderData.name.trim() === '') {
-        toast({
-          title: 'Validation Error',
-          description: 'Cylinder name is required',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
+      // Make sure name field is not empty, if empty generate one
+      let cylinderName = cylinderData.name;
+      if (!cylinderName || cylinderName.trim() === '') {
+        cylinderName = generateNextCylinderName(cylinders);
       }
       
       // Generate a unique ID for the new cylinder
-      const cylinder = { ...cylinderData, id: Date.now().toString() } as Cylinder;
+      const cylinder = { 
+        ...cylinderData, 
+        name: cylinderName,
+        petBottlesRate: cylinderData.petBottlesRate || 0,
+        id: Date.now().toString() 
+      } as Cylinder;
       
       // Try to save to API first
       const response = await fetch(`${API_URL}/cylinders`, {
@@ -147,7 +159,17 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error) {
       console.error('Error adding cylinder:', error);
       // Generate a unique ID for the new cylinder
-      const cylinder = { ...cylinderData, id: Date.now().toString() } as Cylinder;
+      let cylinderName = cylinderData.name;
+      if (!cylinderName || cylinderName.trim() === '') {
+        cylinderName = generateNextCylinderName(cylinders);
+      }
+      
+      const cylinder = { 
+        ...cylinderData, 
+        name: cylinderName,
+        petBottlesRate: cylinderData.petBottlesRate || 0,
+        id: Date.now().toString() 
+      } as Cylinder;
       // Fall back to localStorage if API fails
       setCylinders([...cylinders, cylinder]);
       toast({
@@ -176,13 +198,19 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return;
       }
       
+      // Ensure petBottlesRate exists
+      const cylinderWithPetBottles = {
+        ...updatedCylinder,
+        petBottlesRate: updatedCylinder.petBottlesRate || 0
+      };
+      
       // Try to update via API first
       const response = await fetch(`${API_URL}/cylinders/${updatedCylinder.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedCylinder),
+        body: JSON.stringify(cylinderWithPetBottles),
       });
       
       console.log('Update response status:', response.status);
@@ -206,7 +234,7 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         // Fall back to localStorage if API fails
         setCylinders(cylinders.map(cylinder => 
-          cylinder.id === updatedCylinder.id ? updatedCylinder : cylinder
+          cylinder.id === updatedCylinder.id ? cylinderWithPetBottles : cylinder
         ));
         toast({
           title: 'Warning',
@@ -217,8 +245,12 @@ export const CylinderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error) {
       console.error('Error updating cylinder:', error);
       // Fall back to localStorage if API fails
+      const cylinderWithPetBottles = {
+        ...updatedCylinder,
+        petBottlesRate: updatedCylinder.petBottlesRate || 0
+      };
       setCylinders(cylinders.map(cylinder => 
-        cylinder.id === updatedCylinder.id ? updatedCylinder : cylinder
+        cylinder.id === updatedCylinder.id ? cylinderWithPetBottles : cylinder
       ));
       toast({
         title: 'Warning',
