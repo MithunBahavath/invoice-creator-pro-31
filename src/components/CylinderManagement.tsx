@@ -138,7 +138,7 @@ const CylinderManagement = () => {
                         <TableCell>
                           <Input
                             type="number"
-                            value={editForm.defaultRate === 0 || editForm.defaultRate ? editForm.defaultRate : ''}
+                            value={editForm.defaultRate !== undefined && editForm.defaultRate !== null ? editForm.defaultRate : ''}
                             onFocus={handleInputFocus}
                             onChange={e => setEditForm((current) => ({ 
                               ...current, 
@@ -150,7 +150,7 @@ const CylinderManagement = () => {
                         <TableCell>
                           <Input
                             type="number"
-                            value={editForm.gstRate === 0 || editForm.gstRate ? editForm.gstRate : ''}
+                            value={editForm.gstRate !== undefined && editForm.gstRate !== null ? editForm.gstRate : ''}
                             onFocus={handleInputFocus}
                             onChange={e => setEditForm((current) => ({ 
                               ...current, 
@@ -202,6 +202,28 @@ const CylinderManagement = () => {
       </CardContent>
     </Card>
   );
+};
+
+const handleCancel = () => {
+  setEditingId(null);
+  setEditForm({});
+};
+
+const handleAdd = () => {
+  const newCylinder = {
+    name: '8kg Cylinder',  // Provide a default name
+    hsnSac: '27111900',
+    defaultRate: 800,
+    gstRate: 5
+  };
+  addCylinder(newCylinder);
+};
+
+const handleDelete = (id: string) => {
+  if (window.confirm('Are you sure you want to delete this cylinder? This action cannot be undone.')) {
+    deleteCylinder(id);
+    toast.success('Cylinder deleted successfully');
+  }
 };
 
 export default CylinderManagement;
