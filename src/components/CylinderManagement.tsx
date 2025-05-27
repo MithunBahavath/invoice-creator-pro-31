@@ -65,7 +65,8 @@ const CylinderManagement = () => {
       petBottlesRate: Number(editForm.petBottlesRate || 0)
     };
 
-    if (cylinder.id === editingId) {
+    // Fix: Compare cylinder.id (string) with editingId (string | null)
+    if (editingId && cylinder.id === editingId) {
       updateCylinder(updatedCylinder);
     }
     
