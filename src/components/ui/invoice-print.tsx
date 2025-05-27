@@ -1,4 +1,3 @@
-
 import React, { forwardRef } from 'react';
 import { Invoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
@@ -71,50 +70,6 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
                   <tr>
                     <td className="border border-gray-400 p-1 text-left">Dated</td>
                     <td className="border border-gray-400 p-1 text-left">{formatDate(invoice.invoiceDate)}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Delivery Note</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.deliveryNote || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Mode/Terms of Payment</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.mode || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Reference No. & Date</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.reference || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Other References</td>
-                    <td className="border border-gray-400 p-1 text-left"></td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Buyer's Order No.</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.buyerOrderNo || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Dated</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.buyerOrderDate ? formatDate(invoice.buyerOrderDate) : ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Dispatch Doc No.</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.dispatchDocNo || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Delivery Note Date</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.deliveryNoteDate ? formatDate(invoice.deliveryNoteDate) : ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Dispatched through</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.dispatchedThrough || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Destination</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.destination || ''}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 p-1 text-left">Terms of Delivery</td>
-                    <td className="border border-gray-400 p-1 text-left">{invoice.termsOfDelivery || ''}</td>
                   </tr>
                 </tbody>
               </table>
