@@ -4,7 +4,7 @@ import { BUYERS } from '@/constants/billing';
 import { Buyer } from '@/constants/billing';
 import { toast } from '@/components/ui/use-toast';
 
-interface BuyerContextType {
+interface CylinderBuyerContextType {
   buyers: Buyer[];
   addBuyer: (buyer: Buyer) => void;
   updateBuyer: (buyer: Buyer) => void;
@@ -17,9 +17,9 @@ const API_URL = process.env.NODE_ENV === 'production'
   ? 'https://your-production-api.com/api' 
   : 'http://localhost:5000/api';
 
-const BuyerContext = createContext<BuyerContextType | undefined>(undefined);
+const CylinderBuyerContext = createContext<CylinderBuyerContextType | undefined>(undefined);
 
-export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CylinderBuyerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -29,13 +29,13 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         setIsLoading(true);
         // Try to fetch from API first
-        const response = await fetch(`${API_URL}/bottle-buyers`);
+        const response = await fetch(`${API_URL}/cylinder-buyers`);
         if (response.ok) {
           const data = await response.json();
           setBuyers(data);
         } else {
           // Fall back to localStorage if API fails
-          const savedBuyers = localStorage.getItem('bottleBuyers');
+          const savedBuyers = localStorage.getItem('cylinderBuyers');
           if (savedBuyers) {
             setBuyers(JSON.parse(savedBuyers));
           } else {
@@ -43,9 +43,9 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         }
       } catch (error) {
-        console.error('Error fetching bottle buyers:', error);
+        console.error('Error fetching cylinder buyers:', error);
         // Fall back to localStorage if API fails
-        const savedBuyers = localStorage.getItem('bottleBuyers');
+        const savedBuyers = localStorage.getItem('cylinderBuyers');
         if (savedBuyers) {
           setBuyers(JSON.parse(savedBuyers));
         } else {
@@ -61,7 +61,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Save to localStorage as backup whenever buyers change
   useEffect(() => {
-    localStorage.setItem('bottleBuyers', JSON.stringify(buyers));
+    localStorage.setItem('cylinderBuyers', JSON.stringify(buyers));
   }, [buyers]);
 
   const addBuyer = async (buyer: Buyer) => {
@@ -69,7 +69,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsLoading(true);
       
       // Try to save to API first
-      const response = await fetch(`${API_URL}/bottle-buyers`, {
+      const response = await fetch(`${API_URL}/cylinder-buyers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,8 +81,8 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const savedBuyer = await response.json();
         setBuyers([...buyers, savedBuyer]);
         toast({
-          title: 'Bottle Buyer Added',
-          description: 'Bottle buyer has been added successfully',
+          title: 'Cylinder Buyer Added',
+          description: 'Cylinder buyer has been added successfully',
         });
       } else {
         // Fall back to localStorage if API fails
@@ -94,7 +94,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     } catch (error) {
-      console.error('Error adding bottle buyer:', error);
+      console.error('Error adding cylinder buyer:', error);
       // Fall back to localStorage if API fails
       setBuyers([...buyers, buyer]);
       toast({
@@ -112,7 +112,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsLoading(true);
       
       // Try to update via API first
-      const response = await fetch(`${API_URL}/bottle-buyers/${updatedBuyer.gstin}`, {
+      const response = await fetch(`${API_URL}/cylinder-buyers/${updatedBuyer.gstin}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -126,8 +126,8 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           buyer.gstin === updatedData.gstin ? updatedData : buyer
         ));
         toast({
-          title: 'Bottle Buyer Updated',
-          description: 'Bottle buyer has been updated successfully',
+          title: 'Cylinder Buyer Updated',
+          description: 'Cylinder buyer has been updated successfully',
         });
       } else {
         // Fall back to localStorage if API fails
@@ -141,7 +141,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     } catch (error) {
-      console.error('Error updating bottle buyer:', error);
+      console.error('Error updating cylinder buyer:', error);
       // Fall back to localStorage if API fails
       setBuyers(buyers.map(buyer => 
         buyer.gstin === updatedBuyer.gstin ? updatedBuyer : buyer
@@ -161,15 +161,15 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsLoading(true);
       
       // Try to delete via API first
-      const response = await fetch(`${API_URL}/bottle-buyers/${gstin}`, {
+      const response = await fetch(`${API_URL}/cylinder-buyers/${gstin}`, {
         method: 'DELETE',
       });
       
       if (response.ok) {
         setBuyers(buyers.filter(buyer => buyer.gstin !== gstin));
         toast({
-          title: 'Bottle Buyer Deleted',
-          description: 'Bottle buyer has been deleted successfully',
+          title: 'Cylinder Buyer Deleted',
+          description: 'Cylinder buyer has been deleted successfully',
         });
       } else {
         // Fall back to localStorage if API fails
@@ -181,7 +181,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     } catch (error) {
-      console.error('Error deleting bottle buyer:', error);
+      console.error('Error deleting cylinder buyer:', error);
       // Fall back to localStorage if API fails
       setBuyers(buyers.filter(buyer => buyer.gstin !== gstin));
       toast({
@@ -203,16 +203,16 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <BuyerContext.Provider value={value}>
+    <CylinderBuyerContext.Provider value={value}>
       {children}
-    </BuyerContext.Provider>
+    </CylinderBuyerContext.Provider>
   );
 };
 
-export const useBuyers = () => {
-  const context = useContext(BuyerContext);
+export const useCylinderBuyers = () => {
+  const context = useContext(CylinderBuyerContext);
   if (context === undefined) {
-    throw new Error('useBuyers must be used within a BuyerProvider');
+    throw new Error('useCylinderBuyers must be used within a CylinderBuyerProvider');
   }
   return context;
 };

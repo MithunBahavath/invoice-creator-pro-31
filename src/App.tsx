@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import { InvoiceProvider } from './context/InvoiceContext';
 import { CylinderProvider } from './context/CylinderContext';
 import { BuyerProvider } from './context/BuyerContext';
+import { CylinderBuyerProvider } from './context/CylinderBuyerContext';
 import { BottleProvider } from './context/BottleContext';
 import { AppModeProvider } from './context/AppModeContext';
 import './App.css';
@@ -19,18 +20,20 @@ function App() {
     <AppModeProvider>
       <CylinderProvider>
         <BottleProvider>
-          <BuyerProvider>
-            <InvoiceProvider>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/create-invoice" element={<CreateInvoicePage />} />
-                <Route path="/invoice-history" element={<InvoiceHistoryPage />} />
-                <Route path="/update" element={<UpdatePage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </InvoiceProvider>
-          </BuyerProvider>
+          <CylinderBuyerProvider>
+            <BuyerProvider>
+              <InvoiceProvider>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/create-invoice" element={<CreateInvoicePage />} />
+                  <Route path="/invoice-history" element={<InvoiceHistoryPage />} />
+                  <Route path="/update" element={<UpdatePage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </InvoiceProvider>
+            </BuyerProvider>
+          </CylinderBuyerProvider>
         </BottleProvider>
       </CylinderProvider>
     </AppModeProvider>

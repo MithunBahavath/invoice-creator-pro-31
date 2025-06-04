@@ -3,7 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-import BuyerManagement from '@/components/BuyerManagement';
+import CylinderBuyerManagement from '@/components/CylinderBuyerManagement';
+import BottleBuyerManagement from '@/components/BottleBuyerManagement';
 import CylinderManagement from '@/components/CylinderManagement';
 import BottleManagement from '@/components/BottleManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,24 +34,36 @@ const UpdatePage = () => {
           <Tabs defaultValue={mode === 'cylinder' ? 'cylinders' : 'bottles'} className="w-full">
             <TabsList className="mb-4">
               {mode === 'cylinder' ? (
-                <TabsTrigger value="cylinders">Cylinder Management</TabsTrigger>
+                <>
+                  <TabsTrigger value="cylinders">Cylinder Management</TabsTrigger>
+                  <TabsTrigger value="buyers">Cylinder Buyer Management</TabsTrigger>
+                </>
               ) : (
-                <TabsTrigger value="bottles">Bottle Management</TabsTrigger>
+                <>
+                  <TabsTrigger value="bottles">Bottle Management</TabsTrigger>
+                  <TabsTrigger value="buyers">Bottle Buyer Management</TabsTrigger>
+                </>
               )}
-              <TabsTrigger value="buyers">Buyer Management</TabsTrigger>
             </TabsList>
             {mode === 'cylinder' ? (
-              <TabsContent value="cylinders">
-                <CylinderManagement />
-              </TabsContent>
+              <>
+                <TabsContent value="cylinders">
+                  <CylinderManagement />
+                </TabsContent>
+                <TabsContent value="buyers">
+                  <CylinderBuyerManagement />
+                </TabsContent>
+              </>
             ) : (
-              <TabsContent value="bottles">
-                <BottleManagement />
-              </TabsContent>
+              <>
+                <TabsContent value="bottles">
+                  <BottleManagement />
+                </TabsContent>
+                <TabsContent value="buyers">
+                  <BottleBuyerManagement />
+                </TabsContent>
+              </>
             )}
-            <TabsContent value="buyers">
-              <BuyerManagement />
-            </TabsContent>
           </Tabs>
         </div>
       </main>
