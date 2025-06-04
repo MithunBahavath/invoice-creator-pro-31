@@ -11,6 +11,8 @@ import { Plus, Trash2, Save, Printer } from 'lucide-react';
 import { useInvoice, Invoice, initialInvoiceState } from '@/context/InvoiceContext';
 import { useBuyers } from '@/context/BuyerContext';
 import { useCylinders } from '@/context/CylinderContext';
+import { useBottles } from '@/context/BottleContext';
+import { useAppMode } from '@/context/AppModeContext';
 import { toast } from '@/components/ui/use-toast';
 import { 
   Select,
@@ -31,8 +33,10 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice } = useInvoice();
   const { buyers } = useBuyers();
   const { cylinders } = useCylinders();
+  const { bottles } = useBottles();
+  const { mode } = useAppMode();
   const [isNewInvoice, setIsNewInvoice] = useState(true);
-  const [selectedCylinderId, setSelectedCylinderId] = useState<string | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   
   const { register, control, handleSubmit, watch, setValue, getValues } = useForm<Invoice>({
     defaultValues: currentInvoice || initialInvoiceState,
@@ -63,11 +67,6 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       setValue('ackDate', dateStr);
       setValue('invoiceNo', generateInvoiceNumber());
       setValue('invoiceDate', dateStr);
-      setValue('ewbGeneratedDate', `${dateStr} ${currentDate.getHours()}:${currentDate.getMinutes()} ${currentDate.getHours() >= 12 ? 'PM' : 'AM'}`);
-      
-      const validUntil = new Date(currentDate);
-      validUntil.setDate(validUntil.getDate() + 3);
-      setValue('ewbValidUpto', `${validUntil.toISOString().split('T')[0]} ${validUntil.getHours()}:${validUntil.getMinutes()} ${validUntil.getHours() >= 12 ? 'PM' : 'AM'}`);
     }
   }, [isNewInvoice, setValue]);
   
@@ -84,14 +83,15 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
     
     setValue('totalTaxableAmount', totalTaxableAmount);
     
-    // Calculate tax based on the selected cylinder's GST rate
+    // Calculate tax based on the selected item's GST rate
     let gstRate = 5; // Default GST rate
     
-    // Get the GST rate from the selected cylinder
-    if (selectedCylinderId) {
-      const selectedCylinder = cylinders.find(cyl => cyl.id === selectedCylinderId);
-      if (selectedCylinder) {
-        gstRate = selectedCylinder.gstRate;
+    // Get the GST rate from the selected item
+    if (selectedItemId) {
+      const items = mode === 'cylinder' ? cylinders : bottles;
+      const selectedItem = items.find(item => item.id === selectedItemId);
+      if (selectedItem) {
+        gstRate = selectedItem.gstRate;
       }
     }
     
@@ -150,13 +150,14 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       const amount = quantity * ratePerItem;
       setValue(`items.${index}.amount`, amount);
       
-      // Get GST rate for this item based on the cylinder selected
+      // Get GST rate for this item based on the selected item
       let gstRate = 5; // Default
-      const selectedCylinderId = getValues(`items.${index}.cylinderId`);
-      if (selectedCylinderId) {
-        const selectedCylinder = cylinders.find(cyl => cyl.id === selectedCylinderId);
-        if (selectedCylinder) {
-          gstRate = selectedCylinder.gstRate;
+      const selectedItemId = getValues(`items.${index}.cylinderId`);
+      if (selectedItemId) {
+        const items = mode === 'cylinder' ? cylinders : bottles;
+        const selectedItem = items.find(item => item.id === selectedItemId);
+        if (selectedItem) {
+          gstRate = selectedItem.gstRate;
         }
       }
       
@@ -168,13 +169,14 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   };
 
   const handleItemSelect = (itemId: string, index: number) => {
-    const selectedCylinder = cylinders.find(cyl => cyl.id === itemId);
-    if (selectedCylinder) {
-      setSelectedCylinderId(itemId);
-      setValue(`items.${index}.description`, selectedCylinder.name);
-      setValue(`items.${index}.hsnSac`, selectedCylinder.hsnSac);
-      setValue(`items.${index}.ratePerItem`, selectedCylinder.defaultRate);
-      setValue(`items.${index}.cylinderId`, selectedCylinder.id);
+    const items = mode === 'cylinder' ? cylinders : bottles;
+    const selectedItem = items.find(item => item.id === itemId);
+    if (selectedItem) {
+      setSelectedItemId(itemId);
+      setValue(`items.${index}.description`, selectedItem.name);
+      setValue(`items.${index}.hsnSac`, selectedItem.hsnSac);
+      setValue(`items.${index}.ratePerItem`, selectedItem.defaultRate);
+      setValue(`items.${index}.cylinderId`, selectedItem.id);
       calculateItemAmount(index);
     }
   };
@@ -241,6 +243,8 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     e.target.select();
   };
+
+  const availableItems = mode === 'cylinder' ? cylinders : bottles;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -332,7 +336,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       <Card>
         <CardContent className="pt-6">
           <h2 className="text-lg font-semibold mb-4">Invoice Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="invoiceNo">Invoice No.</Label>
               <Input id="invoiceNo" {...register('invoiceNo')} required />
@@ -342,11 +346,6 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
               <Label htmlFor="invoiceDate">Invoice Date</Label>
               <Input id="invoiceDate" type="date" {...register('invoiceDate')} required />
             </div>
-            
-            <div>
-              <Label htmlFor="eWayBillNo">e-Way Bill No.</Label>
-              <Input id="eWayBillNo" {...register('eWayBillNo')} />
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -354,7 +353,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       <Card>
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Items</h2>
+            <h2 className="text-lg font-semibold">Items ({mode === 'cylinder' ? 'Cylinders' : 'Bottles'})</h2>
             <Button 
               type="button"
               variant="outline"
@@ -404,12 +403,12 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
                         defaultValue={field.description}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select item" />
+                          <SelectValue placeholder={`Select ${mode}`} />
                         </SelectTrigger>
                         <SelectContent>
-                          {cylinders.map((cylinder) => (
-                            <SelectItem key={cylinder.id} value={cylinder.id}>
-                              {cylinder.name}
+                          {availableItems.map((item) => (
+                            <SelectItem key={item.id} value={item.id}>
+                              {item.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -510,7 +509,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
               <div>
                 <Label htmlFor="gstInfo">GST Information</Label>
                 <p className="text-sm text-muted-foreground mb-4">
-                  GST rates are applied automatically based on the selected cylinder type from settings.
+                  GST rates are applied automatically based on the selected {mode} type from settings.
                 </p>
               </div>
               
@@ -604,43 +603,6 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
             <div>
               <Label htmlFor="branchName">Branch</Label>
               <Input id="branchName" {...register('branchName')} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="text-lg font-semibold mb-4">e-Way Bill Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="ewbMode">Mode</Label>
-              <Input id="ewbMode" {...register('ewbMode')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="ewbDistance">Approx Distance (KM)</Label>
-              <Input id="ewbDistance" {...register('ewbDistance')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="ewbTransactionType">Transaction Type</Label>
-              <Input id="ewbTransactionType" {...register('ewbTransactionType')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="vehicleNo">Vehicle No.</Label>
-              <Input id="vehicleNo" {...register('vehicleNo')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="transporterId">Transporter ID</Label>
-              <Input id="transporterId" {...register('transporterId')} />
-            </div>
-            
-            <div>
-              <Label htmlFor="transporterName">Transporter Name</Label>
-              <Input id="transporterName" {...register('transporterName')} />
             </div>
           </div>
         </CardContent>
