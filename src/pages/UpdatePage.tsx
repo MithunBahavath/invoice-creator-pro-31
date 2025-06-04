@@ -5,9 +5,13 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import BuyerManagement from '@/components/BuyerManagement';
 import CylinderManagement from '@/components/CylinderManagement';
+import BottleManagement from '@/components/BottleManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAppMode } from '@/context/AppModeContext';
 
 const UpdatePage = () => {
+  const { mode } = useAppMode();
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-primary text-primary-foreground p-6 shadow-md">
@@ -19,21 +23,31 @@ const UpdatePage = () => {
                 Back to Home
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold">Settings & Updates</h1>
+            <h1 className="text-2xl font-bold">Settings & Updates - {mode === 'cylinder' ? 'Cylinders' : 'Bottles'}</h1>
           </div>
         </div>
       </header>
 
       <main className="flex-grow p-6">
         <div className="max-w-6xl mx-auto">
-          <Tabs defaultValue="cylinders" className="w-full">
+          <Tabs defaultValue={mode === 'cylinder' ? 'cylinders' : 'bottles'} className="w-full">
             <TabsList className="mb-4">
-              <TabsTrigger value="cylinders">Cylinder Management</TabsTrigger>
+              {mode === 'cylinder' ? (
+                <TabsTrigger value="cylinders">Cylinder Management</TabsTrigger>
+              ) : (
+                <TabsTrigger value="bottles">Bottle Management</TabsTrigger>
+              )}
               <TabsTrigger value="buyers">Buyer Management</TabsTrigger>
             </TabsList>
-            <TabsContent value="cylinders">
-              <CylinderManagement />
-            </TabsContent>
+            {mode === 'cylinder' ? (
+              <TabsContent value="cylinders">
+                <CylinderManagement />
+              </TabsContent>
+            ) : (
+              <TabsContent value="bottles">
+                <BottleManagement />
+              </TabsContent>
+            )}
             <TabsContent value="buyers">
               <BuyerManagement />
             </TabsContent>

@@ -5,15 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
-import { useCylinders } from '@/context/CylinderContext';
+import { useBottles } from '@/context/BottleContext';
 import { toast } from '@/components/ui/use-toast';
 
-const CylinderManagement: React.FC = () => {
-  const { cylinders, addCylinder, updateCylinder, deleteCylinder } = useCylinders();
+const BottleManagement: React.FC = () => {
+  const { bottles, addBottle, updateBottle, deleteBottle } = useBottles();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
-  const [newCylinder, setNewCylinder] = useState({
+  const [newBottle, setNewBottle] = useState({
     name: '',
     hsnSac: '',
     defaultRate: '',
@@ -27,91 +27,75 @@ const CylinderManagement: React.FC = () => {
     gstRate: ''
   });
 
-  const generateCylinderName = () => {
-    const nextNumber = cylinders.length + 1;
-    return `Cylinder ${nextNumber.toString().padStart(3, '0')}`;
+  const generateBottleName = () => {
+    const nextNumber = bottles.length + 1;
+    return `Bottle ${nextNumber.toString().padStart(3, '0')}`;
   };
 
-  const handleAddCylinder = () => {
-    if (!newCylinder.name.trim()) {
+  const handleAddBottle = () => {
+    if (!newBottle.name.trim()) {
       toast({
         title: 'Error',
-        description: 'Cylinder name is required',
+        description: 'Bottle name is required',
         variant: 'destructive',
       });
       return;
     }
 
-    const cylinder = {
-      name: newCylinder.name,
-      hsnSac: newCylinder.hsnSac,
-      defaultRate: Number(newCylinder.defaultRate || 0),
-      gstRate: Number(newCylinder.gstRate || 0),
-      petBottlesRate: 0 // Keep for backward compatibility but don't show in UI
+    const bottle = {
+      name: newBottle.name,
+      hsnSac: newBottle.hsnSac,
+      defaultRate: Number(newBottle.defaultRate || 0),
+      gstRate: Number(newBottle.gstRate || 0)
     };
 
-    addCylinder(cylinder);
-    setNewCylinder({
+    addBottle(bottle);
+    setNewBottle({
       name: '',
       hsnSac: '',
       defaultRate: '',
       gstRate: ''
     });
     setIsAdding(false);
-    
-    toast({
-      title: 'Success',
-      description: 'Cylinder added successfully',
-    });
   };
 
-  const handleEditCylinder = (cylinder: any) => {
-    const updatedCylinder = {
-      id: cylinder.id,
+  const handleEditBottle = (bottle: any) => {
+    const updatedBottle = {
+      id: bottle.id,
       name: editForm.name,
       hsnSac: editForm.hsnSac,
       defaultRate: Number(editForm.defaultRate || 0),
-      gstRate: Number(editForm.gstRate || 0),
-      petBottlesRate: cylinder.petBottlesRate || 0 // Keep existing value for backward compatibility
+      gstRate: Number(editForm.gstRate || 0)
     };
 
-    if (editingId && cylinder.id === editingId) {
-      updateCylinder(updatedCylinder);
+    if (editingId && bottle.id === editingId) {
+      updateBottle(updatedBottle);
     }
     
     setEditingId(null);
-    
-    toast({
-      title: 'Success',
-      description: 'Cylinder updated successfully',
-    });
   };
 
-  const startEditing = (cylinder: any) => {
-    setEditingId(cylinder.id);
+  const startEditing = (bottle: any) => {
+    setEditingId(bottle.id);
     setEditForm({
-      name: cylinder.name,
-      hsnSac: cylinder.hsnSac,
-      defaultRate: cylinder.defaultRate.toString(),
-      gstRate: cylinder.gstRate.toString()
+      name: bottle.name,
+      hsnSac: bottle.hsnSac,
+      defaultRate: bottle.defaultRate.toString(),
+      gstRate: bottle.gstRate.toString()
     });
   };
 
   const handleDelete = (id: string) => {
-    deleteCylinder(id);
-    toast({
-      title: 'Success',
-      description: 'Cylinder deleted successfully',
-    });
+    deleteBottle(id);
   };
 
   const startAdding = () => {
-    const autoName = generateCylinderName();
-    setNewCylinder({
+    const autoName = generateBottleName();
+    setNewBottle({
       name: autoName,
-      hsnSac: '27111900',
+      hsnSac: '22011000',
       defaultRate: '',
-      gstRate: '5'
+      gstRate: '12'
     });
     setIsAdding(true);
   };
@@ -119,16 +103,16 @@ const CylinderManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Cylinder Management</h1>
+        <h1 className="text-2xl font-bold">Bottle Management</h1>
         <Button onClick={startAdding} disabled={isAdding}>
-          <Plus className="mr-2 h-4 w-4" /> Add Cylinder
+          <Plus className="mr-2 h-4 w-4" /> Add Bottle
         </Button>
       </div>
 
       {isAdding && (
         <Card>
           <CardHeader>
-            <CardTitle>Add New Cylinder</CardTitle>
+            <CardTitle>Add New Bottle</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -136,9 +120,9 @@ const CylinderManagement: React.FC = () => {
                 <Label htmlFor="newName">Name</Label>
                 <Input
                   id="newName"
-                  value={newCylinder.name}
-                  onChange={(e) => setNewCylinder({...newCylinder, name: e.target.value})}
-                  placeholder="Cylinder name"
+                  value={newBottle.name}
+                  onChange={(e) => setNewBottle({...newBottle, name: e.target.value})}
+                  placeholder="Bottle name"
                 />
               </div>
               
@@ -146,8 +130,8 @@ const CylinderManagement: React.FC = () => {
                 <Label htmlFor="newHsn">HSN/SAC</Label>
                 <Input
                   id="newHsn"
-                  value={newCylinder.hsnSac}
-                  onChange={(e) => setNewCylinder({...newCylinder, hsnSac: e.target.value})}
+                  value={newBottle.hsnSac}
+                  onChange={(e) => setNewBottle({...newBottle, hsnSac: e.target.value})}
                   placeholder="HSN/SAC"
                 />
               </div>
@@ -157,8 +141,8 @@ const CylinderManagement: React.FC = () => {
                 <Input
                   id="newRate"
                   type="number"
-                  value={newCylinder.defaultRate}
-                  onChange={(e) => setNewCylinder({...newCylinder, defaultRate: e.target.value})}
+                  value={newBottle.defaultRate}
+                  onChange={(e) => setNewBottle({...newBottle, defaultRate: e.target.value})}
                   placeholder="0.00"
                 />
               </div>
@@ -168,16 +152,16 @@ const CylinderManagement: React.FC = () => {
                 <Input
                   id="newGst"
                   type="number"
-                  value={newCylinder.gstRate}
-                  onChange={(e) => setNewCylinder({...newCylinder, gstRate: e.target.value})}
-                  placeholder="5"
+                  value={newBottle.gstRate}
+                  onChange={(e) => setNewBottle({...newBottle, gstRate: e.target.value})}
+                  placeholder="12"
                 />
               </div>
             </div>
             
             <div className="flex space-x-2">
-              <Button onClick={handleAddCylinder}>
-                <Save className="mr-2 h-4 w-4" /> Save Cylinder
+              <Button onClick={handleAddBottle}>
+                <Save className="mr-2 h-4 w-4" /> Save Bottle
               </Button>
               <Button variant="outline" onClick={() => setIsAdding(false)}>
                 <X className="mr-2 h-4 w-4" /> Cancel
@@ -188,34 +172,34 @@ const CylinderManagement: React.FC = () => {
       )}
 
       <div className="grid gap-4">
-        {cylinders.map((cylinder) => (
-          <Card key={cylinder.id}>
+        {bottles.map((bottle) => (
+          <Card key={bottle.id}>
             <CardContent className="pt-6">
-              {editingId === cylinder.id ? (
+              {editingId === bottle.id ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                      <Label htmlFor={`editName-${cylinder.id}`}>Name</Label>
+                      <Label htmlFor={`editName-${bottle.id}`}>Name</Label>
                       <Input
-                        id={`editName-${cylinder.id}`}
+                        id={`editName-${bottle.id}`}
                         value={editForm.name}
                         onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor={`editHsn-${cylinder.id}`}>HSN/SAC</Label>
+                      <Label htmlFor={`editHsn-${bottle.id}`}>HSN/SAC</Label>
                       <Input
-                        id={`editHsn-${cylinder.id}`}
+                        id={`editHsn-${bottle.id}`}
                         value={editForm.hsnSac}
                         onChange={(e) => setEditForm({...editForm, hsnSac: e.target.value})}
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor={`editRate-${cylinder.id}`}>Default Rate</Label>
+                      <Label htmlFor={`editRate-${bottle.id}`}>Default Rate</Label>
                       <Input
-                        id={`editRate-${cylinder.id}`}
+                        id={`editRate-${bottle.id}`}
                         type="number"
                         value={editForm.defaultRate}
                         onChange={(e) => setEditForm({...editForm, defaultRate: e.target.value})}
@@ -223,9 +207,9 @@ const CylinderManagement: React.FC = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor={`editGst-${cylinder.id}`}>GST Rate (%)</Label>
+                      <Label htmlFor={`editGst-${bottle.id}`}>GST Rate (%)</Label>
                       <Input
-                        id={`editGst-${cylinder.id}`}
+                        id={`editGst-${bottle.id}`}
                         type="number"
                         value={editForm.gstRate}
                         onChange={(e) => setEditForm({...editForm, gstRate: e.target.value})}
@@ -234,7 +218,7 @@ const CylinderManagement: React.FC = () => {
                   </div>
                   
                   <div className="flex space-x-2">
-                    <Button onClick={() => handleEditCylinder(cylinder)}>
+                    <Button onClick={() => handleEditBottle(bottle)}>
                       <Save className="mr-2 h-4 w-4" /> Save
                     </Button>
                     <Button variant="outline" onClick={() => setEditingId(null)}>
@@ -246,19 +230,19 @@ const CylinderManagement: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
                     <div>
-                      <p className="font-medium">{cylinder.name}</p>
+                      <p className="font-medium">{bottle.name}</p>
                       <p className="text-sm text-gray-500">Name</p>
                     </div>
                     <div>
-                      <p className="font-medium">{cylinder.hsnSac}</p>
+                      <p className="font-medium">{bottle.hsnSac}</p>
                       <p className="text-sm text-gray-500">HSN/SAC</p>
                     </div>
                     <div>
-                      <p className="font-medium">₹{cylinder.defaultRate}</p>
+                      <p className="font-medium">₹{bottle.defaultRate}</p>
                       <p className="text-sm text-gray-500">Default Rate</p>
                     </div>
                     <div>
-                      <p className="font-medium">{cylinder.gstRate}%</p>
+                      <p className="font-medium">{bottle.gstRate}%</p>
                       <p className="text-sm text-gray-500">GST Rate</p>
                     </div>
                   </div>
@@ -267,14 +251,14 @@ const CylinderManagement: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => startEditing(cylinder)}
+                      onClick={() => startEditing(bottle)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(cylinder.id)}
+                      onClick={() => handleDelete(bottle.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -286,13 +270,13 @@ const CylinderManagement: React.FC = () => {
         ))}
       </div>
 
-      {cylinders.length === 0 && !isAdding && (
+      {bottles.length === 0 && !isAdding && (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No cylinders found. Add your first cylinder to get started.</p>
+              <p className="text-gray-500 mb-4">No bottles found. Add your first bottle to get started.</p>
               <Button onClick={startAdding}>
-                <Plus className="mr-2 h-4 w-4" /> Add First Cylinder
+                <Plus className="mr-2 h-4 w-4" /> Add First Bottle
               </Button>
             </div>
           </CardContent>
@@ -302,4 +286,4 @@ const CylinderManagement: React.FC = () => {
   );
 };
 
-export default CylinderManagement;
+export default BottleManagement;

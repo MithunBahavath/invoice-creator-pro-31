@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Receipt, History, Plus, Settings, BarChart, FileText, Home, Cylinder, Users, FileBarChart } from 'lucide-react';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { useAppMode } from '@/context/AppModeContext';
 
 const HomePage: React.FC = () => {
+  const { mode, setMode } = useAppMode();
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navigation Bar */}
@@ -54,29 +57,56 @@ const HomePage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Banner */}
+      {/* Hero Banner with Mode Selection */}
       <div className="bg-primary text-primary-foreground py-16 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Agnee Gas Distributor Billing Software</h1>
           <p className="text-xl mb-8">Create invoices, manage customers, and grow your business easily and professionally.</p>
-          <Button size="lg" className="px-8 py-6 text-lg">
-            Get Started
-          </Button>
+          
+          {/* Mode Selection */}
+          <div className="flex justify-center gap-4 mb-8">
+            <Button 
+              size="lg" 
+              variant={mode === 'cylinder' ? 'secondary' : 'outline'}
+              onClick={() => setMode('cylinder')}
+              className="px-8 py-6 text-lg"
+            >
+              <Cylinder className="mr-2 h-5 w-5" />
+              Cylinder
+            </Button>
+            <Button 
+              size="lg" 
+              variant={mode === 'bottle' ? 'secondary' : 'outline'}
+              onClick={() => setMode('bottle')}
+              className="px-8 py-6 text-lg"
+            >
+              <FileBarChart className="mr-2 h-5 w-5" />
+              Bottle
+            </Button>
+          </div>
+          
+          <div className="text-lg">
+            Currently managing: <span className="font-bold">{mode === 'cylinder' ? 'Cylinders' : 'Bottles'}</span>
+          </div>
         </div>
       </div>
 
-      {/* Features Section - THIS IS THE NEW SECTION */}
+      {/* Features Section */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-gray-100">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">Complete Gas Distribution Management</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            Complete {mode === 'cylinder' ? 'Gas Cylinder' : 'Bottle'} Distribution Management
+          </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             <div className="bg-white p-8 rounded-xl shadow-md flex flex-col items-center text-center transition-transform hover:scale-105">
               <div className="bg-primary/10 p-3 rounded-full mb-4">
-                <Cylinder className="h-8 w-8 text-primary" />
+                {mode === 'cylinder' ? <Cylinder className="h-8 w-8 text-primary" /> : <FileBarChart className="h-8 w-8 text-primary" />}
               </div>
-              <h3 className="text-xl font-bold mb-2">Cylinder Management</h3>
-              <p className="text-gray-600">Track inventory, manage different cylinder sizes and their rates with ease.</p>
+              <h3 className="text-xl font-bold mb-2">{mode === 'cylinder' ? 'Cylinder' : 'Bottle'} Management</h3>
+              <p className="text-gray-600">
+                Track inventory, manage different {mode === 'cylinder' ? 'cylinder sizes' : 'bottle types'} and their rates with ease.
+              </p>
             </div>
             
             <div className="bg-white p-8 rounded-xl shadow-md flex flex-col items-center text-center transition-transform hover:scale-105">
@@ -110,7 +140,9 @@ const HomePage: React.FC = () => {
       {/* Quick Actions Section */}
       <main className="flex-grow p-6 bg-gray-50">
         <div className="max-w-6xl mx-auto mt-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">Quick Actions</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            Quick Actions - {mode === 'cylinder' ? 'Cylinders' : 'Bottles'}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
@@ -119,12 +151,12 @@ const HomePage: React.FC = () => {
                   Create New Invoice
                 </CardTitle>
                 <CardDescription>
-                  Create a new tax invoice with automatic tax calculations
+                  Create a new tax invoice for {mode === 'cylinder' ? 'cylinders' : 'bottles'} with automatic tax calculations
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Generate professional tax invoices with automatic GST calculations, amount in words, e-Way bill generation, and more.
+                  Generate professional tax invoices with automatic GST calculations, amount in words, and more.
                 </p>
               </CardContent>
               <CardFooter>
@@ -143,7 +175,7 @@ const HomePage: React.FC = () => {
                   Invoice History
                 </CardTitle>
                 <CardDescription>
-                  View, edit and manage your previously created invoices
+                  View, edit and manage your previously created {mode === 'cylinder' ? 'cylinder' : 'bottle'} invoices
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -163,16 +195,16 @@ const HomePage: React.FC = () => {
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
                 <CardTitle className="text-2xl flex items-center gap-2">
-                  <Settings className="h-6 w-6" />
+                  <Settings className="h-6 w-4" />
                   Update Details
                 </CardTitle>
                 <CardDescription>
-                  Manage buyers, cylinders, and tax configurations
+                  Manage buyers, {mode === 'cylinder' ? 'cylinders' : 'bottles'}, and tax configurations
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Add or edit buyers, manage cylinder sizes and their prices, and configure tax rates for different product types.
+                  Add or edit buyers, manage {mode === 'cylinder' ? 'cylinder sizes' : 'bottle types'} and their prices, and configure tax rates.
                 </p>
               </CardContent>
               <CardFooter>

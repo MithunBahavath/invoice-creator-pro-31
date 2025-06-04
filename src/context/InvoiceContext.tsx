@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/use-toast';
@@ -43,17 +42,6 @@ export interface Invoice {
   // Invoice details
   invoiceNo: string;
   invoiceDate: string;
-  eWayBillNo: string;
-  deliveryNote: string;
-  mode: string;
-  reference: string;
-  buyerOrderNo: string;
-  buyerOrderDate: string;
-  dispatchDocNo: string;
-  deliveryNoteDate: string;
-  dispatchedThrough: string;
-  destination: string;
-  termsOfDelivery: string;
   
   // Items and calculations
   items: InvoiceItem[];
@@ -71,19 +59,6 @@ export interface Invoice {
   accountNo: string;
   ifscCode: string;
   branchName: string;
-  
-  // e-Way Bill details
-  ewbMode: string;
-  ewbDistance: string;
-  ewbTransactionType: string;
-  ewbSupplyType: string;
-  ewbGeneratedBy: string;
-  ewbGeneratedDate: string;
-  ewbValidUpto: string;
-  vehicleNo: string;
-  transporterId: string;
-  transporterName: string;
-  fromPlace: string;
 }
 
 // Define the initial state of a new invoice
@@ -106,17 +81,6 @@ export const initialInvoiceState: Invoice = {
   buyerStateCode: '33',
   invoiceNo: '',
   invoiceDate: new Date().toISOString().split('T')[0],
-  eWayBillNo: '',
-  deliveryNote: '',
-  mode: '',
-  reference: '',
-  buyerOrderNo: '',
-  buyerOrderDate: '',
-  dispatchDocNo: '',
-  deliveryNoteDate: '',
-  dispatchedThrough: '',
-  destination: '',
-  termsOfDelivery: '',
   items: [],
   cgstRate: 2.5,
   sgstRate: 2.5,
@@ -130,17 +94,6 @@ export const initialInvoiceState: Invoice = {
   accountNo: '510909010109147',
   ifscCode: 'CIUB0000003',
   branchName: 'Kumbakonam Town',
-  ewbMode: '1 - Road',
-  ewbDistance: '',
-  ewbTransactionType: 'Regular',
-  ewbSupplyType: 'Outward-Supply',
-  ewbGeneratedBy: '',
-  ewbGeneratedDate: '',
-  ewbValidUpto: '',
-  vehicleNo: '',
-  transporterId: '',
-  transporterName: '',
-  fromPlace: 'Kumbakonam',
 };
 
 // Define the context type
