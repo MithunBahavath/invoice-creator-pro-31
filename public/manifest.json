@@ -1,0 +1,25 @@
+
+{
+  "name": "Invoice Creator Pro",
+  "short_name": "InvoicePro",
+  "description": "Professional invoice management application for cylinders and bottles",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#a855f7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
