@@ -22,13 +22,6 @@ if (typeof window !== 'undefined') {
       e.preventDefault();
     }
   }, { passive: false });
-
-  // Prevent pinch zoom
-  document.addEventListener('touchmove', function(e) {
-    if (e.scale !== 1) {
-      e.preventDefault();
-    }
-  }, { passive: false });
 }
 
 createRoot(document.getElementById("root")!).render(
