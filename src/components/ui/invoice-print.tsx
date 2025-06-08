@@ -217,7 +217,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
                   </td>
                   <td className="border border-gray-400 p-2 align-bottom text-right">
                     <div className="mt-12 pt-4 border-t border-gray-400 inline-block text-center">
-                      <p>for Sakthi Gas Service</p>
+                      <p>for Agnee Gas Distributors</p>
                       <p className="mb-1 font-bold">Authorized Signatory</p>
                     </div>
                   </td>
