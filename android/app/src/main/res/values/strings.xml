@@ -1,0 +1,7 @@
+
+<resources>
+    <string name="app_name">Invoice Creator Pro</string>
+    <string name="title_activity_main">Invoice Creator Pro</string>
+    <string name="package_name">app.lovable.0a81ecdfe680466dbaed80c8fecdd156</string>
+    <string name="custom_url_scheme">app.lovable.0a81ecdfe680466dbaed80c8fecdd156</string>
+</resources>
