@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Save, Printer } from 'lucide-react';
 import { useInvoice, Invoice, initialInvoiceState } from '@/context/InvoiceContext';
 import { useBuyers } from '@/context/BuyerContext';
+import { useCylinderBuyers } from '@/context/CylinderBuyerContext';
 import { useCylinders } from '@/context/CylinderContext';
 import { useBottles } from '@/context/BottleContext';
 import { useAppMode } from '@/context/AppModeContext';
@@ -31,7 +31,8 @@ import {
 
 const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) => {
   const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice } = useInvoice();
-  const { buyers } = useBuyers();
+  const { buyers: bottleBuyers } = useBuyers();
+  const { buyers: cylinderBuyers } = useCylinderBuyers();
   const { cylinders } = useCylinders();
   const { bottles } = useBottles();
   const { mode } = useAppMode();
@@ -49,6 +50,9 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   
   const watchItems = watch('items');
   
+  // Get buyers based on current mode
+  const buyers = mode === 'cylinder' ? cylinderBuyers : bottleBuyers;
+
   useEffect(() => {
     if (currentInvoice?.id) {
       setIsNewInvoice(false);
@@ -293,10 +297,10 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
             <h2 className="text-lg font-semibold mb-4">Buyer Information</h2>
             <div className="space-y-4">
               <div>
-                <Label>Select Customer</Label>
+                <Label>Select {mode === 'cylinder' ? 'Cylinder' : 'Bottle'} Customer</Label>
                 <Select onValueChange={handleBuyerSelect}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a customer" />
+                    <SelectValue placeholder={`Select a ${mode} customer`} />
                   </SelectTrigger>
                   <SelectContent>
                     {buyers.map((buyer) => (
