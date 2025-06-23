@@ -23,7 +23,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Fetch buyers from backend
+  // Fetch bottle buyers from backend
   useEffect(() => {
     const fetchBuyers = async () => {
       try {
@@ -74,7 +74,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(buyer),
+        body: JSON.stringify({ ...buyer, buyerType: 'bottle' }),
       });
       
       if (response.ok) {
@@ -117,7 +117,7 @@ export const BuyerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedBuyer),
+        body: JSON.stringify({ ...updatedBuyer, buyerType: 'bottle' }),
       });
       
       if (response.ok) {
