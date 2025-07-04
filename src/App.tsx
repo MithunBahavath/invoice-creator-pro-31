@@ -1,43 +1,46 @@
-
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import CreateInvoicePage from './pages/CreateInvoicePage';
-import InvoiceHistoryPage from './pages/InvoiceHistoryPage';
-import NotFound from './pages/NotFound';
-import UpdatePage from './pages/UpdatePage';
-import DashboardPage from './pages/DashboardPage';
-import { InvoiceProvider } from './context/InvoiceContext';
-import { CylinderProvider } from './context/CylinderContext';
-import { BuyerProvider } from './context/BuyerContext';
-import { CylinderBuyerProvider } from './context/CylinderBuyerContext';
-import { BottleProvider } from './context/BottleContext';
-import { AppModeProvider } from './context/AppModeContext';
-import './App.css';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import { InvoiceProvider } from '@/context/InvoiceContext';
+import { BuyerProvider } from '@/context/BuyerContext';
+import { CylinderBuyerProvider } from '@/context/CylinderBuyerContext';
+import { CylinderProvider } from '@/context/CylinderContext';
+import { BottleProvider } from '@/context/BottleContext';
+import { AppModeProvider } from '@/context/AppModeContext';
+import { CompanyDetailsProvider } from '@/context/CompanyDetailsContext';
 
-function App() {
-  return (
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
     <AppModeProvider>
-      <CylinderProvider>
-        <BottleProvider>
-          <CylinderBuyerProvider>
-            <BuyerProvider>
-              <InvoiceProvider>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/create-invoice" element={<CreateInvoicePage />} />
-                  <Route path="/invoice-history" element={<InvoiceHistoryPage />} />
-                  <Route path="/update" element={<UpdatePage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </InvoiceProvider>
-            </BuyerProvider>
-          </CylinderBuyerProvider>
-        </BottleProvider>
-      </CylinderProvider>
+      <CompanyDetailsProvider>
+        <InvoiceProvider>
+          <BuyerProvider>
+            <CylinderBuyerProvider>
+              <CylinderProvider>
+                <BottleProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <Routes>
+                        <Route path="/*" element={<Index />} />
+                      </Routes>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </BottleProvider>
+              </CylinderProvider>
+            </CylinderBuyerProvider>
+          </BuyerProvider>
+        </InvoiceProvider>
+      </CompanyDetailsProvider>
     </AppModeProvider>
-  );
-}
+  </QueryClientProvider>
+);
 
 export default App;
