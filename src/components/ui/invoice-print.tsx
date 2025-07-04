@@ -2,7 +2,6 @@
 import React, { forwardRef } from 'react';
 import { Invoice } from '@/context/InvoiceContext';
 import { formatDate } from '@/utils/helpers';
-import { QRCodeSVG } from 'qrcode.react';
 
 interface InvoicePrintProps {
   invoice: Invoice;
@@ -49,12 +48,6 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
           <div className="w-1/3 text-right">
             <div className="text-center mb-2">
               <h2 className="font-bold">e-Invoice</h2>
-            </div>
-            <div className="flex justify-end mb-2">
-              <QRCodeSVG 
-                value={`Invoice:${invoice.invoiceNo}`} 
-                size={130}
-              />
             </div>
             <div className="mb-2">
               <table className="w-full text-sm border-collapse">
