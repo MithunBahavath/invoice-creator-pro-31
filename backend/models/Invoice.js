@@ -15,9 +15,6 @@ const InvoiceItemSchema = new mongoose.Schema({
 
 const InvoiceSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
-  irn: String,
-  ackNo: String,
-  ackDate: String,
   
   // Seller information
   sellerName: String,

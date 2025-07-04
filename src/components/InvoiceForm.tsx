@@ -66,9 +66,6 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       const currentDate = new Date();
       const dateStr = currentDate.toISOString().split('T')[0];
       
-      setValue('irn', generateIRN());
-      setValue('ackNo', generateAckNo());
-      setValue('ackDate', dateStr);
       setValue('invoiceNo', generateInvoiceNumber());
       setValue('invoiceDate', dateStr);
     }

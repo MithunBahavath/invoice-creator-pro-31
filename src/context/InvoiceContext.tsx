@@ -19,9 +19,6 @@ export interface InvoiceItem {
 export interface Invoice {
   id: string;
   // Header information
-  irn: string;
-  ackNo: string;
-  ackDate: string;
   
   // Seller information
   sellerName: string;
@@ -64,9 +61,6 @@ export interface Invoice {
 // Define the initial state of a new invoice
 export const initialInvoiceState: Invoice = {
   id: uuidv4(),
-  irn: '',
-  ackNo: '',
-  ackDate: '',
   sellerName: 'SAKTHI GAS SERVICE',
   sellerAddress: '2/A Kalyanaraman Kovil Street, Old Bus Stand, Kumbakonam, Tamil Nadu - 612001, India',
   sellerGstin: '33HVVPS5257L1ZH',

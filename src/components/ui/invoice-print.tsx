@@ -28,11 +28,6 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
             <div className="text-center">
               <h1 className="text-xl font-bold">Tax Invoice</h1>
             </div>
-            <div className="mt-2">
-              <p className="mb-1"><strong>IRN:</strong> {invoice.irn}</p>
-              <p className="mb-1"><strong>Ack No:</strong> {invoice.ackNo}</p>
-              <p className="mb-1"><strong>Ack Date:</strong> {formatDate(invoice.ackDate)}</p>
-            </div>
             <div className="mt-4">
               <h3 className="font-bold">Sakthi Gas Service</h3>
               <p className="text-sm">2/A Kalyanaraman Kovil Street, Old Bus Stand,</p>
@@ -57,7 +52,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
             </div>
             <div className="flex justify-end mb-2">
               <QRCodeSVG 
-                value={`IRN:${invoice.irn}\nInvoice:${invoice.invoiceNo}`} 
+                value={`Invoice:${invoice.invoiceNo}`} 
                 size={130}
               />
             </div>
