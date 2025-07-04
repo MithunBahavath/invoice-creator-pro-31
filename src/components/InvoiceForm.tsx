@@ -24,13 +24,11 @@ import {
 import {
   numberToWords,
   calculateTaxes,
-  generateIRN,
-  generateAckNo,
   generateInvoiceNumber
 } from '@/utils/helpers';
 
 const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) => {
-  const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice } = useInvoice();
+  const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice, invoices } = useInvoice();
   const { buyers: bottleBuyers } = useBuyers();
   const { buyers: cylinderBuyers } = useCylinderBuyers();
   const { cylinders } = useCylinders();
@@ -66,10 +64,11 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       const currentDate = new Date();
       const dateStr = currentDate.toISOString().split('T')[0];
       
-      setValue('invoiceNo', generateInvoiceNumber());
+      // Generate invoice number using the new algorithm with existing invoices
+      setValue('invoiceNo', generateInvoiceNumber(invoices));
       setValue('invoiceDate', dateStr);
     }
-  }, [isNewInvoice, setValue]);
+  }, [isNewInvoice, setValue, invoices]);
   
   useEffect(() => {
     if (watchItems) {

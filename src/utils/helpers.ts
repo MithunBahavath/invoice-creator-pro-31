@@ -87,11 +87,63 @@ export function generateAckNo(): string {
   return Math.floor(100000000000000 + Math.random() * 900000000000000).toString();
 }
 
-// Generate a unique invoice number based on date and sequence
-export function generateInvoiceNumber(): string {
-  const date = new Date();
-  const year = date.getFullYear().toString().slice(-2);
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return `S${year}${month}${random}`;
+// Extract sequence number from existing invoice number
+function extractSequenceFromInvoiceNumber(invoiceNumber: string): number {
+  if (!invoiceNumber) return 0;
+  
+  // Handle both old format (S24XXXX) and new format (INV/YYYY/MM/XXXX)
+  if (invoiceNumber.startsWith('INV/')) {
+    const parts = invoiceNumber.split('/');
+    if (parts.length === 4) {
+      return parseInt(parts[3]) || 0;
+    }
+  } else if (invoiceNumber.startsWith('S')) {
+    // Old format: S24XXXX - extract last 4 digits
+    const match = invoiceNumber.match(/S\d{2}(\d{4})$/);
+    if (match) {
+      return parseInt(match[1]) || 0;
+    }
+  }
+  
+  return 0;
+}
+
+// Check if invoice number belongs to current month and year
+function isSameMonthYear(invoiceNumber: string, year: number, month: number): boolean {
+  if (!invoiceNumber.startsWith('INV/')) return false;
+  
+  const parts = invoiceNumber.split('/');
+  if (parts.length === 4) {
+    const invYear = parseInt(parts[1]);
+    const invMonth = parseInt(parts[2]);
+    return invYear === year && invMonth === month;
+  }
+  
+  return false;
+}
+
+// Generate invoice number using INV/YYYY/MM/XXXX format
+export function generateInvoiceNumber(existingInvoices: any[] = [], prefix: string = 'INV'): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1; // JavaScript months are 0-indexed
+  const monthFormatted = month.toString().padStart(2, '0');
+  
+  // Find the highest sequence number for current month and year
+  let maxSequence = 0;
+  
+  existingInvoices.forEach(invoice => {
+    if (invoice.invoiceNo && isSameMonthYear(invoice.invoiceNo, year, month)) {
+      const sequence = extractSequenceFromInvoiceNumber(invoice.invoiceNo);
+      if (sequence > maxSequence) {
+        maxSequence = sequence;
+      }
+    }
+  });
+  
+  // Increment for new invoice
+  const newSequence = maxSequence + 1;
+  const sequenceFormatted = newSequence.toString().padStart(4, '0');
+  
+  return `${prefix}/${year}/${monthFormatted}/${sequenceFormatted}`;
 }
