@@ -1,23 +1,13 @@
-
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './HomePage';
-import CreateInvoicePage from './CreateInvoicePage';
-import InvoiceHistoryPage from './InvoiceHistoryPage';
-import UpdatePage from './UpdatePage';
-import DashboardPage from './DashboardPage';
-import NotFound from './NotFound';
+// Update this page (the content is just a fallback if you fail to update the page)
 
 const Index = () => {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/create" element={<CreateInvoicePage />} />
-      <Route path="/history" element={<InvoiceHistoryPage />} />
-      <Route path="/update" element={<UpdatePage />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
+        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+      </div>
+    </div>
   );
 };
 

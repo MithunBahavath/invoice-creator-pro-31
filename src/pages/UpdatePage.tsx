@@ -2,15 +2,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Menu } from 'lucide-react';
 import CylinderBuyerManagement from '@/components/CylinderBuyerManagement';
 import BottleBuyerManagement from '@/components/BottleBuyerManagement';
 import CylinderManagement from '@/components/CylinderManagement';
 import BottleManagement from '@/components/BottleManagement';
-import SellerDetailsManagement from '@/components/SellerDetailsManagement';
-import BankDetailsManagement from '@/components/BankDetailsManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppMode } from '@/context/AppModeContext';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const UpdatePage = () => {
   const { mode } = useAppMode();
@@ -38,7 +37,7 @@ const UpdatePage = () => {
           <Tabs defaultValue={mode === 'cylinder' ? 'cylinders' : 'bottles'} className="w-full">
             {/* Mobile-responsive tabs */}
             <div className="mb-4 overflow-x-auto">
-              <TabsList className="grid h-auto w-full grid-cols-2 lg:grid-cols-4 gap-1 p-1">
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1">
                 {mode === 'cylinder' ? (
                   <>
                     <TabsTrigger 
@@ -51,7 +50,7 @@ const UpdatePage = () => {
                       value="buyers" 
                       className="text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
                     >
-                      Cylinder Buyers
+                      Cylinder Buyer Management
                     </TabsTrigger>
                   </>
                 ) : (
@@ -66,22 +65,10 @@ const UpdatePage = () => {
                       value="buyers" 
                       className="text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
                     >
-                      Bottle Buyers
+                      Bottle Buyer Management
                     </TabsTrigger>
                   </>
                 )}
-                <TabsTrigger 
-                  value="seller" 
-                  className="text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
-                >
-                  Seller Details
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="bank" 
-                  className="text-xs sm:text-sm py-2 px-2 sm:px-4 whitespace-nowrap"
-                >
-                  Bank Details
-                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -104,14 +91,6 @@ const UpdatePage = () => {
                 </TabsContent>
               </>
             )}
-            
-            <TabsContent value="seller">
-              <SellerDetailsManagement />
-            </TabsContent>
-            
-            <TabsContent value="bank">
-              <BankDetailsManagement />
-            </TabsContent>
           </Tabs>
         </div>
       </main>
