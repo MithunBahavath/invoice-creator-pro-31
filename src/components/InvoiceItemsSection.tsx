@@ -11,9 +11,9 @@ import { Invoice } from '@/context/InvoiceContext';
 interface InvoiceItemsSectionProps {
   register: UseFormRegister<Invoice>;
   control: Control<Invoice>;
-  fields: UseFieldArrayReturn['fields'];
-  append: UseFieldArrayReturn['append'];
-  remove: UseFieldArrayReturn['remove'];
+  fields: UseFieldArrayReturn<Invoice, 'items', 'id'>['fields'];
+  append: UseFieldArrayReturn<Invoice, 'items', 'id'>['append'];
+  remove: UseFieldArrayReturn<Invoice, 'items', 'id'>['remove'];
   getValues: UseFormGetValues<Invoice>;
   mode: string;
   availableItems: any[];
@@ -88,114 +88,120 @@ export const InvoiceItemsSection: React.FC<InvoiceItemsSectionProps> = ({
                 </tr>
               )}
               
-              {fields.map((field, index) => (
-                <tr key={field.id} className="border-b">
-                  <td className="p-2">
-                    <Input
-                      {...register(`items.${index}.slNo` as const)}
-                      defaultValue={index + 1}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Select 
-                      onValueChange={(value) => handleItemSelect(value, index)}
-                      defaultValue={field.description}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={`Select ${mode}`} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableItems.map((item) => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="p-2">
-                    <Input
-                      {...register(`items.${index}.hsnSac` as const)}
-                      placeholder="HSN/SAC"
-                      className="w-24"
-                      readOnly
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Controller
-                      control={control}
-                      name={`items.${index}.quantity` as const}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="number"
-                          min="0"
-                          onFocus={handleInputFocus}
-                          onChange={(e) => {
-                            field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0);
-                            calculateItemAmount(index);
-                          }}
-                          className="w-20"
-                        />
-                      )}
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Input
-                      {...register(`items.${index}.rateIncTax` as const)}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      readOnly
-                      className="w-28 text-right"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Controller
-                      control={control}
-                      name={`items.${index}.ratePerItem` as const}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          onFocus={handleInputFocus}
-                          onChange={(e) => {
-                            field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0);
-                            calculateItemAmount(index);
-                          }}
-                          className="w-28 text-right"
-                        />
-                      )}
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Input
-                      {...register(`items.${index}.amount` as const)}
-                      type="number"
-                      step="0.01"
-                      readOnly
-                      className="w-28 text-right"
-                    />
-                  </td>
-                  <td className="p-2 text-center">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        remove(index);
-                        setTimeout(() => recalculateAmounts(), 0);
-                      }}
-                      variant="ghost"
-                      size="sm"
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {fields.map((field, index) => {
+                // Get the current item data from form values
+                const currentItem = register(`items.${index}.description` as const);
+                const currentDescription = currentItem.name ? '' : field.description || '';
+                
+                return (
+                  <tr key={field.id} className="border-b">
+                    <td className="p-2">
+                      <Input
+                        {...register(`items.${index}.slNo` as const)}
+                        defaultValue={index + 1}
+                        readOnly
+                        className="w-12 text-center"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Select 
+                        onValueChange={(value) => handleItemSelect(value, index)}
+                        defaultValue={currentDescription}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={`Select ${mode}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableItems.map((item) => (
+                            <SelectItem key={item.id} value={item.id}>
+                              {item.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        {...register(`items.${index}.hsnSac` as const)}
+                        placeholder="HSN/SAC"
+                        className="w-24"
+                        readOnly
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Controller
+                        control={control}
+                        name={`items.${index}.quantity` as const}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            type="number"
+                            min="0"
+                            onFocus={handleInputFocus}
+                            onChange={(e) => {
+                              field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0);
+                              calculateItemAmount(index);
+                            }}
+                            className="w-20"
+                          />
+                        )}
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        {...register(`items.${index}.rateIncTax` as const)}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        readOnly
+                        className="w-28 text-right"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Controller
+                        control={control}
+                        name={`items.${index}.ratePerItem` as const}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            onFocus={handleInputFocus}
+                            onChange={(e) => {
+                              field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0);
+                              calculateItemAmount(index);
+                            }}
+                            className="w-28 text-right"
+                          />
+                        )}
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        {...register(`items.${index}.amount` as const)}
+                        type="number"
+                        step="0.01"
+                        readOnly
+                        className="w-28 text-right"
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          remove(index);
+                          setTimeout(() => recalculateAmounts(), 0);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

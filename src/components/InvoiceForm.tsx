@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -62,7 +61,6 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
     }
   }, [currentInvoice]);
 
-  // Auto-populate seller and bank details when they change
   useEffect(() => {
     if (activeSellerDetails) {
       setValue('sellerName', activeSellerDetails.company_name);
