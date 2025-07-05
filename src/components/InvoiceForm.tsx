@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +13,8 @@ import { useBuyers } from '@/context/BuyerContext';
 import { useCylinderBuyers } from '@/context/CylinderBuyerContext';
 import { useCylinders } from '@/context/CylinderContext';
 import { useBottles } from '@/context/BottleContext';
+import { useSellerDetails } from '@/context/SellerDetailsContext';
+import { useBankDetails } from '@/context/BankDetailsContext';
 import { useAppMode } from '@/context/AppModeContext';
 import { toast } from '@/components/ui/use-toast';
 import { 
@@ -33,6 +36,8 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const { buyers: cylinderBuyers } = useCylinderBuyers();
   const { cylinders } = useCylinders();
   const { bottles } = useBottles();
+  const { activeSellerDetails } = useSellerDetails();
+  const { activeBankDetails } = useBankDetails();
   const { mode } = useAppMode();
   const [isNewInvoice, setIsNewInvoice] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -50,6 +55,28 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   
   // Get buyers based on current mode
   const buyers = mode === 'cylinder' ? cylinderBuyers : bottleBuyers;
+
+  // Auto-populate seller and bank details when they become available
+  useEffect(() => {
+    if (activeSellerDetails) {
+      setValue('sellerName', activeSellerDetails.company_name);
+      setValue('sellerAddress', activeSellerDetails.address);
+      setValue('sellerGstin', activeSellerDetails.gstin);
+      setValue('sellerContact', activeSellerDetails.contact || '');
+      setValue('sellerEmail', activeSellerDetails.email || '');
+      setValue('sellerState', activeSellerDetails.state);
+      setValue('sellerStateCode', activeSellerDetails.state_code);
+    }
+  }, [activeSellerDetails, setValue]);
+
+  useEffect(() => {
+    if (activeBankDetails) {
+      setValue('bankName', activeBankDetails.bank_name);
+      setValue('accountNo', activeBankDetails.account_no);
+      setValue('ifscCode', activeBankDetails.ifsc_code);
+      setValue('branchName', activeBankDetails.branch_name);
+    }
+  }, [activeBankDetails, setValue]);
 
   useEffect(() => {
     if (currentInvoice?.id) {
@@ -255,33 +282,33 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
             <div className="space-y-4">
               <div>
                 <Label htmlFor="sellerName">Company Name</Label>
-                <Input id="sellerName" {...register('sellerName')} />
+                <Input id="sellerName" {...register('sellerName')} readOnly className="bg-gray-50" />
               </div>
               
               <div>
                 <Label htmlFor="sellerAddress">Address</Label>
-                <Textarea id="sellerAddress" {...register('sellerAddress')} />
+                <Textarea id="sellerAddress" {...register('sellerAddress')} readOnly className="bg-gray-50" />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sellerGstin">GSTIN/UIN</Label>
-                  <Input id="sellerGstin" {...register('sellerGstin')} />
+                  <Input id="sellerGstin" {...register('sellerGstin')} readOnly className="bg-gray-50" />
                 </div>
                 <div>
                   <Label htmlFor="sellerState">State</Label>
-                  <Input id="sellerState" {...register('sellerState')} />
+                  <Input id="sellerState" {...register('sellerState')} readOnly className="bg-gray-50" />
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sellerContact">Contact</Label>
-                  <Input id="sellerContact" {...register('sellerContact')} />
+                  <Input id="sellerContact" {...register('sellerContact')} readOnly className="bg-gray-50" />
                 </div>
                 <div>
                   <Label htmlFor="sellerEmail">Email</Label>
-                  <Input id="sellerEmail" type="email" {...register('sellerEmail')} />
+                  <Input id="sellerEmail" type="email" {...register('sellerEmail')} readOnly className="bg-gray-50" />
                 </div>
               </div>
             </div>
@@ -587,22 +614,22 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="bankName">Bank Name</Label>
-              <Input id="bankName" {...register('bankName')} />
+              <Input id="bankName" {...register('bankName')} readOnly className="bg-gray-50" />
             </div>
             
             <div>
               <Label htmlFor="accountNo">A/C No.</Label>
-              <Input id="accountNo" {...register('accountNo')} />
+              <Input id="accountNo" {...register('accountNo')} readOnly className="bg-gray-50" />
             </div>
             
             <div>
               <Label htmlFor="ifscCode">IFSC Code</Label>
-              <Input id="ifscCode" {...register('ifscCode')} />
+              <Input id="ifscCode" {...register('ifscCode')} readOnly className="bg-gray-50" />
             </div>
             
             <div>
               <Label htmlFor="branchName">Branch</Label>
-              <Input id="branchName" {...register('branchName')} />
+              <Input id="branchName" {...register('branchName')} readOnly className="bg-gray-50" />
             </div>
           </div>
         </CardContent>
