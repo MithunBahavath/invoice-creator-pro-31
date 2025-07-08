@@ -107,7 +107,11 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
         setValue('sellerStateCode', activeSellerDetails.state_code);
       }
     }
-  }, [agneeRole, activeSellerDetails, setValue]);
+    
+    // Update the current invoice with the latest form data
+    const formData = getValues();
+    setCurrentInvoice(formData);
+  }, [agneeRole, activeSellerDetails, setValue, getValues, setCurrentInvoice]);
 
   // Auto-populate bank details when they become available
   useEffect(() => {
@@ -116,8 +120,12 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       setValue('accountNo', activeBankDetails.account_no);
       setValue('ifscCode', activeBankDetails.ifsc_code);
       setValue('branchName', activeBankDetails.branch_name);
+      
+      // Update the current invoice with bank details
+      const formData = getValues();
+      setCurrentInvoice(formData);
     }
-  }, [activeBankDetails, setValue]);
+  }, [activeBankDetails, setValue, getValues, setCurrentInvoice]);
 
   useEffect(() => {
     if (currentInvoice?.id) {
@@ -143,6 +151,14 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       recalculateAmounts();
     }
   }, [watchItems]);
+
+  // Update current invoice whenever form data changes
+  useEffect(() => {
+    const subscription = watch((value) => {
+      setCurrentInvoice(value as Invoice);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setCurrentInvoice]);
   
   const recalculateAmounts = () => {
     const totalTaxableAmount = watchItems?.reduce((sum, item) => {

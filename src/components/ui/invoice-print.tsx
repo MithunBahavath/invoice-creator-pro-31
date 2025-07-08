@@ -28,19 +28,16 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
               <h1 className="text-xl font-bold">Tax Invoice</h1>
             </div>
             <div className="mt-4">
-              <h3 className="font-bold">Sakthi Gas Service</h3>
-              <p className="text-sm">2/A Kalyanaraman Kovil Street, Old Bus Stand,</p>
-              <p className="text-sm">Kumbakonam</p>
-              <p className="text-sm">Tamil Nadu - 612001, India</p>
-              <p className="text-sm">GSTIN: {invoice.sellerGstin}, State Code: 33</p>
-              <p className="text-sm">Contact: {invoice.sellerContact}</p>
-              <p className="text-sm">E-Mail: {invoice.sellerEmail}</p>
+              <h3 className="font-bold">{invoice.sellerName}</h3>
+              <div className="text-sm whitespace-pre-line">{invoice.sellerAddress}</div>
+              <p className="text-sm">GSTIN: {invoice.sellerGstin}, State Code: {invoice.sellerStateCode}</p>
+              {invoice.sellerContact && <p className="text-sm">Contact: {invoice.sellerContact}</p>}
+              {invoice.sellerEmail && <p className="text-sm">E-Mail: {invoice.sellerEmail}</p>}
             </div>
             <div className="mt-2">
               <p className="font-bold">Bill To:</p>
               <p className="text-sm font-bold">{invoice.buyerName}</p>
-              <p className="text-sm whitespace-pre-line">{invoice.buyerAddress}</p>
-              <p className="text-sm">Tamil Nadu - 637204, India</p>
+              <div className="text-sm whitespace-pre-line">{invoice.buyerAddress}</div>
               <p className="text-sm">GSTIN: {invoice.buyerGstin}</p>
               <p className="text-sm">State Name: {invoice.buyerState}, Code: {invoice.buyerStateCode}</p>
             </div>
@@ -205,7 +202,7 @@ export const InvoicePrint = forwardRef<HTMLDivElement, InvoicePrintProps>(({ inv
                   </td>
                   <td className="border border-gray-400 p-2 align-bottom text-right">
                     <div className="mt-12 pt-4 border-t border-gray-400 inline-block text-center">
-                      <p>for Agnee Gas Distributors</p>
+                      <p>for {invoice.sellerName}</p>
                       <p className="mb-1 font-bold">Authorized Signatory</p>
                     </div>
                   </td>
