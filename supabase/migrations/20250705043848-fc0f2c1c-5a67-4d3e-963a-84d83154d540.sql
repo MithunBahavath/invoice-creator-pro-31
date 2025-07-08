@@ -44,16 +44,31 @@ CREATE POLICY IF NOT EXISTS "Allow all operations on bank_details"
   USING (true)
   WITH CHECK (true);
 
--- Insert default seller details if none exist
+-- Insert AGNEE GAS DISTRIBUTER details if none exist
 INSERT INTO public.seller_details (company_name, address, gstin, contact, email, state, state_code)
+SELECT 'AGNEE GAS DISTRIBUTER', 
+       '3/168B IRRUKUR
+PARAMATHI VELUR
+NAMAKKAL
+Tamil Nadu - 637204, India',
+       '33HVVPS5257L1ZH',
+       '',
+       '',
+       'Tamil Nadu',
+       '33'
+WHERE NOT EXISTS (SELECT 1 FROM public.seller_details WHERE company_name = 'AGNEE GAS DISTRIBUTER');
+
+-- Insert default seller details if none exist (SAKTHI GAS SERVICE)
+INSERT INTO public.seller_details (company_name, address, gstin, contact, email, state, state_code, is_active)
 SELECT 'SAKTHI GAS SERVICE', 
        '2/A Kalyanaraman Kovil Street, Old Bus Stand, Kumbakonam, Tamil Nadu - 612001, India',
        '33HVVPS5257L1ZH',
        '8072991484',
        'sakthigas@gmail.com',
        'Tamil Nadu',
-       '33'
-WHERE NOT EXISTS (SELECT 1 FROM public.seller_details WHERE is_active = true);
+       '33',
+       false
+WHERE NOT EXISTS (SELECT 1 FROM public.seller_details WHERE company_name = 'SAKTHI GAS SERVICE');
 
 -- Insert default bank details if none exist
 INSERT INTO public.bank_details (bank_name, account_no, ifsc_code, branch_name)

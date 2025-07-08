@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,6 +16,7 @@ import { useSellerDetails } from '@/context/SellerDetailsContext';
 import { useBankDetails } from '@/context/BankDetailsContext';
 import { useAppMode } from '@/context/AppModeContext';
 import { toast } from '@/components/ui/use-toast';
+import AddressRoleSelector from './AddressRoleSelector';
 import { 
   Select,
   SelectContent,
@@ -30,6 +30,17 @@ import {
   generateInvoiceNumber
 } from '@/utils/helpers';
 
+// AGNEE GAS DISTRIBUTER default details
+const AGNEE_DETAILS = {
+  company_name: 'AGNEE GAS DISTRIBUTER',
+  address: '3/168B IRRUKUR\nPARAMATHI VELUR\nNAMAKKAL\nTamil Nadu - 637204, India',
+  gstin: '33HVVPS5257L1ZH',
+  contact: '',
+  email: '',
+  state: 'Tamil Nadu',
+  state_code: '33'
+};
+
 const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) => {
   const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice, invoices } = useInvoice();
   const { buyers: bottleBuyers } = useBuyers();
@@ -41,6 +52,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   const { mode } = useAppMode();
   const [isNewInvoice, setIsNewInvoice] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [agneeRole, setAgneeRole] = useState<'seller' | 'buyer'>('seller');
   
   const { register, control, handleSubmit, watch, setValue, getValues } = useForm<Invoice>({
     defaultValues: currentInvoice || initialInvoiceState,
@@ -56,19 +68,48 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   // Get buyers based on current mode
   const buyers = mode === 'cylinder' ? cylinderBuyers : bottleBuyers;
 
-  // Auto-populate seller and bank details when they become available
+  // Set AGNEE details based on role selection
   useEffect(() => {
-    if (activeSellerDetails) {
-      setValue('sellerName', activeSellerDetails.company_name);
-      setValue('sellerAddress', activeSellerDetails.address);
-      setValue('sellerGstin', activeSellerDetails.gstin);
-      setValue('sellerContact', activeSellerDetails.contact || '');
-      setValue('sellerEmail', activeSellerDetails.email || '');
-      setValue('sellerState', activeSellerDetails.state);
-      setValue('sellerStateCode', activeSellerDetails.state_code);
+    if (agneeRole === 'seller') {
+      // Set AGNEE as seller
+      setValue('sellerName', AGNEE_DETAILS.company_name);
+      setValue('sellerAddress', AGNEE_DETAILS.address);
+      setValue('sellerGstin', AGNEE_DETAILS.gstin);
+      setValue('sellerContact', AGNEE_DETAILS.contact);
+      setValue('sellerEmail', AGNEE_DETAILS.email);
+      setValue('sellerState', AGNEE_DETAILS.state);
+      setValue('sellerStateCode', AGNEE_DETAILS.state_code);
+      
+      // Set active seller details as buyer if available
+      if (activeSellerDetails) {
+        setValue('buyerName', activeSellerDetails.company_name);
+        setValue('buyerAddress', activeSellerDetails.address);
+        setValue('buyerGstin', activeSellerDetails.gstin);
+        setValue('buyerState', activeSellerDetails.state);
+        setValue('buyerStateCode', activeSellerDetails.state_code);
+      }
+    } else {
+      // Set AGNEE as buyer
+      setValue('buyerName', AGNEE_DETAILS.company_name);
+      setValue('buyerAddress', AGNEE_DETAILS.address);
+      setValue('buyerGstin', AGNEE_DETAILS.gstin);
+      setValue('buyerState', AGNEE_DETAILS.state);
+      setValue('buyerStateCode', AGNEE_DETAILS.state_code);
+      
+      // Set active seller details as seller if available
+      if (activeSellerDetails) {
+        setValue('sellerName', activeSellerDetails.company_name);
+        setValue('sellerAddress', activeSellerDetails.address);
+        setValue('sellerGstin', activeSellerDetails.gstin);
+        setValue('sellerContact', activeSellerDetails.contact || '');
+        setValue('sellerEmail', activeSellerDetails.email || '');
+        setValue('sellerState', activeSellerDetails.state);
+        setValue('sellerStateCode', activeSellerDetails.state_code);
+      }
     }
-  }, [activeSellerDetails, setValue]);
+  }, [agneeRole, activeSellerDetails, setValue]);
 
+  // Auto-populate bank details when they become available
   useEffect(() => {
     if (activeBankDetails) {
       setValue('bankName', activeBankDetails.bank_name);
@@ -145,7 +186,7 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
   
   const handleBuyerSelect = (buyerId: string) => {
     const selectedBuyer = buyers.find(buyer => buyer.gstin === buyerId);
-    if (selectedBuyer) {
+    if (selectedBuyer && agneeRole === 'seller') {
       setValue('buyerName', selectedBuyer.name);
       setValue('buyerAddress', selectedBuyer.address);
       setValue('buyerGstin', selectedBuyer.gstin);
@@ -275,40 +316,47 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <AddressRoleSelector 
+        selectedRole={agneeRole}
+        onRoleChange={setAgneeRole}
+      />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-lg font-semibold mb-4">Seller Information</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              {agneeRole === 'seller' ? 'Seller Information (AGNEE GAS DISTRIBUTER)' : 'Seller Information'}
+            </h2>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="sellerName">Company Name</Label>
-                <Input id="sellerName" {...register('sellerName')} readOnly className="bg-gray-50" />
+                <Input id="sellerName" {...register('sellerName')} readOnly={agneeRole === 'seller'} className={agneeRole === 'seller' ? 'bg-gray-50' : ''} />
               </div>
               
               <div>
                 <Label htmlFor="sellerAddress">Address</Label>
-                <Textarea id="sellerAddress" {...register('sellerAddress')} readOnly className="bg-gray-50" />
+                <Textarea id="sellerAddress" {...register('sellerAddress')} readOnly={agneeRole === 'seller'} className={agneeRole === 'seller' ? 'bg-gray-50' : ''} />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sellerGstin">GSTIN/UIN</Label>
-                  <Input id="sellerGstin" {...register('sellerGstin')} readOnly className="bg-gray-50" />
+                  <Input id="sellerGstin" {...register('sellerGstin')} readOnly={agneeRole === 'seller'} className={agneeRole === 'seller' ? 'bg-gray-50' : ''} />
                 </div>
                 <div>
                   <Label htmlFor="sellerState">State</Label>
-                  <Input id="sellerState" {...register('sellerState')} readOnly className="bg-gray-50" />
+                  <Input id="sellerState" {...register('sellerState')} readOnly={agneeRole === 'seller'} className={agneeRole === 'seller' ? 'bg-gray-50' : ''} />
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sellerContact">Contact</Label>
-                  <Input id="sellerContact" {...register('sellerContact')} readOnly className="bg-gray-50" />
+                  <Input id="sellerContact" {...register('sellerContact')} readOnly={agneeRole === 'seller'} className={agneeRole === 'seller' ? 'bg-gray-50' : ''} />
                 </div>
                 <div>
                   <Label htmlFor="sellerEmail">Email</Label>
-                  <Input id="sellerEmail" type="email" {...register('sellerEmail')} readOnly className="bg-gray-50" />
+                  <Input id="sellerEmail" type="email" {...register('sellerEmail')} readOnly={agneeRole === 'seller'} className={agneeRole === 'seller' ? 'bg-gray-50' : ''} />
                 </div>
               </div>
             </div>
@@ -317,42 +365,46 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
         
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-lg font-semibold mb-4">Buyer Information</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              {agneeRole === 'buyer' ? 'Buyer Information (AGNEE GAS DISTRIBUTER)' : 'Buyer Information'}
+            </h2>
             <div className="space-y-4">
-              <div>
-                <Label>Select {mode === 'cylinder' ? 'Cylinder' : 'Bottle'} Customer</Label>
-                <Select onValueChange={handleBuyerSelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Select a ${mode} customer`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {buyers.map((buyer) => (
-                      <SelectItem key={buyer.gstin} value={buyer.gstin}>
-                        {buyer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {agneeRole === 'seller' && (
+                <div>
+                  <Label>Select {mode === 'cylinder' ? 'Cylinder' : 'Bottle'} Customer</Label>
+                  <Select onValueChange={handleBuyerSelect}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Select a ${mode} customer`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {buyers.map((buyer) => (
+                        <SelectItem key={buyer.gstin} value={buyer.gstin}>
+                          {buyer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               
               <div>
                 <Label htmlFor="buyerName">Company Name</Label>
-                <Input id="buyerName" {...register('buyerName')} readOnly />
+                <Input id="buyerName" {...register('buyerName')} readOnly={agneeRole === 'buyer'} className={agneeRole === 'buyer' ? 'bg-gray-50' : ''} />
               </div>
               
               <div>
                 <Label htmlFor="buyerAddress">Address</Label>
-                <Textarea id="buyerAddress" {...register('buyerAddress')} readOnly />
+                <Textarea id="buyerAddress" {...register('buyerAddress')} readOnly={agneeRole === 'buyer'} className={agneeRole === 'buyer' ? 'bg-gray-50' : ''} />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="buyerGstin">GSTIN/UIN</Label>
-                  <Input id="buyerGstin" {...register('buyerGstin')} readOnly />
+                  <Input id="buyerGstin" {...register('buyerGstin')} readOnly={agneeRole === 'buyer'} className={agneeRole === 'buyer' ? 'bg-gray-50' : ''} />
                 </div>
                 <div>
                   <Label htmlFor="buyerState">State</Label>
-                  <Input id="buyerState" {...register('buyerState')} readOnly />
+                  <Input id="buyerState" {...register('buyerState')} readOnly={agneeRole === 'buyer'} className={agneeRole === 'buyer' ? 'bg-gray-50' : ''} />
                 </div>
               </div>
             </div>
