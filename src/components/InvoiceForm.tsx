@@ -41,6 +41,17 @@ const AGNEE_DETAILS = {
   state_code: '33'
 };
 
+// Sakthi default details
+const SAKTHI_DETAILS = {
+  company_name: 'Sakthi',
+  address: 'Default Address',
+  gstin: '33AAAAA0000A1Z5',
+  contact: '',
+  email: '',
+  state: 'Tamil Nadu',
+  state_code: '33'
+};
+
 const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) => {
   const { currentInvoice, setCurrentInvoice, addInvoice, updateInvoice, invoices } = useInvoice();
   const { buyers: bottleBuyers } = useBuyers();
@@ -80,14 +91,12 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       setValue('sellerState', AGNEE_DETAILS.state);
       setValue('sellerStateCode', AGNEE_DETAILS.state_code);
       
-      // Set active seller details as buyer if available
-      if (activeSellerDetails) {
-        setValue('buyerName', activeSellerDetails.company_name);
-        setValue('buyerAddress', activeSellerDetails.address);
-        setValue('buyerGstin', activeSellerDetails.gstin);
-        setValue('buyerState', activeSellerDetails.state);
-        setValue('buyerStateCode', activeSellerDetails.state_code);
-      }
+      // Set Sakthi as buyer (default)
+      setValue('buyerName', SAKTHI_DETAILS.company_name);
+      setValue('buyerAddress', SAKTHI_DETAILS.address);
+      setValue('buyerGstin', SAKTHI_DETAILS.gstin);
+      setValue('buyerState', SAKTHI_DETAILS.state);
+      setValue('buyerStateCode', SAKTHI_DETAILS.state_code);
     } else {
       // Set AGNEE as buyer
       setValue('buyerName', AGNEE_DETAILS.company_name);
@@ -96,16 +105,14 @@ const InvoiceForm: React.FC<{ onPrintClick: () => void }> = ({ onPrintClick }) =
       setValue('buyerState', AGNEE_DETAILS.state);
       setValue('buyerStateCode', AGNEE_DETAILS.state_code);
       
-      // Set active seller details as seller if available
-      if (activeSellerDetails) {
-        setValue('sellerName', activeSellerDetails.company_name);
-        setValue('sellerAddress', activeSellerDetails.address);
-        setValue('sellerGstin', activeSellerDetails.gstin);
-        setValue('sellerContact', activeSellerDetails.contact || '');
-        setValue('sellerEmail', activeSellerDetails.email || '');
-        setValue('sellerState', activeSellerDetails.state);
-        setValue('sellerStateCode', activeSellerDetails.state_code);
-      }
+      // Set Sakthi as seller (default)
+      setValue('sellerName', SAKTHI_DETAILS.company_name);
+      setValue('sellerAddress', SAKTHI_DETAILS.address);
+      setValue('sellerGstin', SAKTHI_DETAILS.gstin);
+      setValue('sellerContact', SAKTHI_DETAILS.contact);
+      setValue('sellerEmail', SAKTHI_DETAILS.email);
+      setValue('sellerState', SAKTHI_DETAILS.state);
+      setValue('sellerStateCode', SAKTHI_DETAILS.state_code);
     }
     
     // Update the current invoice with the latest form data
