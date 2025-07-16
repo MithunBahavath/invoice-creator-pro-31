@@ -43,11 +43,11 @@ const AGNEE_DETAILS = {
 
 // Sakthi default details
 const SAKTHI_DETAILS = {
-  company_name: 'Sakthi',
-  address: 'Default Address',
-  gstin: '33AAAAA0000A1Z5',
-  contact: '',
-  email: '',
+  company_name: 'SAKTHI GAS SERVICE',
+  address: '2/A Kalyanaraman Kovil Street, Old Bus Stand, Kumbakonam, Tamil Nadu - 612001, India',
+  gstin: '33HVVPS5257L1ZH',
+  contact: '8072991484',
+  email: 'sakthigas@gmail.com',
   state: 'Tamil Nadu',
   state_code: '33'
 };
