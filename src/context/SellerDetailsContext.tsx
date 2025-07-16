@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export interface SellerDetails {
@@ -38,17 +37,32 @@ export const SellerDetailsProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchSellerDetails = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('seller_details')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const stored = localStorage.getItem('sellerDetails');
+      let data = stored ? JSON.parse(stored) : [];
 
-      if (error) throw error;
+      // Add default AGNEE GAS DISTRIBUTER if no data exists
+      if (data.length === 0) {
+        const defaultSeller: SellerDetails = {
+          id: crypto.randomUUID(),
+          company_name: 'AGNEE GAS DISTRIBUTER',
+          address: '3/168B IRRUKUR\nPARAMATHI VELUR\nNAMAKKAL\nTamil Nadu - 637204, India',
+          gstin: '33HVVPS5257L1ZH',
+          contact: null,
+          email: null,
+          state: 'Tamil Nadu',
+          state_code: '33',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        data = [defaultSeller];
+        localStorage.setItem('sellerDetails', JSON.stringify(data));
+      }
 
-      setSellerDetails(data || []);
+      setSellerDetails(data);
       
       // Set the active seller details (first active one or first one)
-      const activeDetails = data?.find(d => d.is_active) || data?.[0];
+      const activeDetails = data.find((d: SellerDetails) => d.is_active) || data[0];
       if (activeDetails) {
         setActiveSellerDetailsState(activeDetails);
       }
@@ -67,15 +81,18 @@ export const SellerDetailsProvider: React.FC<{ children: React.ReactNode }> = ({
   const addSellerDetails = async (details: Omit<SellerDetails, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('seller_details')
-        .insert([details])
-        .select()
-        .single();
+      const now = new Date().toISOString();
+      const newDetails: SellerDetails = {
+        ...details,
+        id: crypto.randomUUID(),
+        created_at: now,
+        updated_at: now
+      };
 
-      if (error) throw error;
-
-      setSellerDetails(prev => [data, ...prev]);
+      const updated = [newDetails, ...sellerDetails];
+      setSellerDetails(updated);
+      localStorage.setItem('sellerDetails', JSON.stringify(updated));
+      
       toast({
         title: 'Success',
         description: 'Seller details added successfully',
@@ -95,20 +112,21 @@ export const SellerDetailsProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateSellerDetails = async (id: string, details: Partial<SellerDetails>) => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('seller_details')
-        .update(details)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setSellerDetails(prev => prev.map(item => item.id === id ? data : item));
+      const updatedDetails = { ...details, updated_at: new Date().toISOString() };
+      
+      const updated = sellerDetails.map(item => 
+        item.id === id ? { ...item, ...updatedDetails } : item
+      );
+      
+      setSellerDetails(updated);
+      localStorage.setItem('sellerDetails', JSON.stringify(updated));
       
       // Update active details if it's the one being updated
       if (activeSellerDetails?.id === id) {
-        setActiveSellerDetailsState(data);
+        const updatedItem = updated.find(item => item.id === id);
+        if (updatedItem) {
+          setActiveSellerDetailsState(updatedItem);
+        }
       }
 
       toast({
@@ -130,19 +148,14 @@ export const SellerDetailsProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteSellerDetails = async (id: string) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase
-        .from('seller_details')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setSellerDetails(prev => prev.filter(item => item.id !== id));
+      const updated = sellerDetails.filter(item => item.id !== id);
+      
+      setSellerDetails(updated);
+      localStorage.setItem('sellerDetails', JSON.stringify(updated));
       
       // If deleted item was active, set another one as active
       if (activeSellerDetails?.id === id) {
-        const remaining = sellerDetails.filter(item => item.id !== id);
-        setActiveSellerDetailsState(remaining[0] || null);
+        setActiveSellerDetailsState(updated[0] || null);
       }
 
       toast({
@@ -163,27 +176,19 @@ export const SellerDetailsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const setActiveSellerDetails = async (id: string) => {
     try {
-      // Deactivate all first
-      await supabase
-        .from('seller_details')
-        .update({ is_active: false })
-        .neq('id', '');
-
-      // Activate the selected one
-      const { data, error } = await supabase
-        .from('seller_details')
-        .update({ is_active: true })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setActiveSellerDetailsState(data);
-      setSellerDetails(prev => prev.map(item => ({
+      const updated = sellerDetails.map(item => ({
         ...item,
-        is_active: item.id === id
-      })));
+        is_active: item.id === id,
+        updated_at: new Date().toISOString()
+      }));
+
+      setSellerDetails(updated);
+      localStorage.setItem('sellerDetails', JSON.stringify(updated));
+      
+      const activeItem = updated.find(item => item.id === id);
+      if (activeItem) {
+        setActiveSellerDetailsState(activeItem);
+      }
 
       toast({
         title: 'Success',

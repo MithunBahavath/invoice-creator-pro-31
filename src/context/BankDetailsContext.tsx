@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export interface BankDetails {
@@ -35,17 +34,13 @@ export const BankDetailsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const fetchBankDetails = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('bank_details')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const stored = localStorage.getItem('bankDetails');
+      const data = stored ? JSON.parse(stored) : [];
 
-      if (error) throw error;
-
-      setBankDetails(data || []);
+      setBankDetails(data);
       
       // Set the active bank details (first active one or first one)
-      const activeDetails = data?.find(d => d.is_active) || data?.[0];
+      const activeDetails = data.find((d: BankDetails) => d.is_active) || data[0];
       if (activeDetails) {
         setActiveBankDetailsState(activeDetails);
       }
@@ -64,15 +59,18 @@ export const BankDetailsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const addBankDetails = async (details: Omit<BankDetails, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('bank_details')
-        .insert([details])
-        .select()
-        .single();
+      const now = new Date().toISOString();
+      const newDetails: BankDetails = {
+        ...details,
+        id: crypto.randomUUID(),
+        created_at: now,
+        updated_at: now
+      };
 
-      if (error) throw error;
-
-      setBankDetails(prev => [data, ...prev]);
+      const updated = [newDetails, ...bankDetails];
+      setBankDetails(updated);
+      localStorage.setItem('bankDetails', JSON.stringify(updated));
+      
       toast({
         title: 'Success',
         description: 'Bank details added successfully',
@@ -92,20 +90,21 @@ export const BankDetailsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const updateBankDetails = async (id: string, details: Partial<BankDetails>) => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('bank_details')
-        .update(details)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setBankDetails(prev => prev.map(item => item.id === id ? data : item));
+      const updatedDetails = { ...details, updated_at: new Date().toISOString() };
+      
+      const updated = bankDetails.map(item => 
+        item.id === id ? { ...item, ...updatedDetails } : item
+      );
+      
+      setBankDetails(updated);
+      localStorage.setItem('bankDetails', JSON.stringify(updated));
       
       // Update active details if it's the one being updated
       if (activeBankDetails?.id === id) {
-        setActiveBankDetailsState(data);
+        const updatedItem = updated.find(item => item.id === id);
+        if (updatedItem) {
+          setActiveBankDetailsState(updatedItem);
+        }
       }
 
       toast({
@@ -127,19 +126,14 @@ export const BankDetailsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const deleteBankDetails = async (id: string) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase
-        .from('bank_details')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setBankDetails(prev => prev.filter(item => item.id !== id));
+      const updated = bankDetails.filter(item => item.id !== id);
+      
+      setBankDetails(updated);
+      localStorage.setItem('bankDetails', JSON.stringify(updated));
       
       // If deleted item was active, set another one as active
       if (activeBankDetails?.id === id) {
-        const remaining = bankDetails.filter(item => item.id !== id);
-        setActiveBankDetailsState(remaining[0] || null);
+        setActiveBankDetailsState(updated[0] || null);
       }
 
       toast({
@@ -160,27 +154,19 @@ export const BankDetailsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const setActiveBankDetails = async (id: string) => {
     try {
-      // Deactivate all first
-      await supabase
-        .from('bank_details')
-        .update({ is_active: false })
-        .neq('id', '');
-
-      // Activate the selected one
-      const { data, error } = await supabase
-        .from('bank_details')
-        .update({ is_active: true })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setActiveBankDetailsState(data);
-      setBankDetails(prev => prev.map(item => ({
+      const updated = bankDetails.map(item => ({
         ...item,
-        is_active: item.id === id
-      })));
+        is_active: item.id === id,
+        updated_at: new Date().toISOString()
+      }));
+
+      setBankDetails(updated);
+      localStorage.setItem('bankDetails', JSON.stringify(updated));
+      
+      const activeItem = updated.find(item => item.id === id);
+      if (activeItem) {
+        setActiveBankDetailsState(activeItem);
+      }
 
       toast({
         title: 'Success',
