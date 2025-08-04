@@ -1,6 +1,7 @@
 
-const { app, BrowserWindow, Menu, shell } = require('electron');
+const { app, BrowserWindow, Menu, shell, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs').promises;
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;
@@ -112,6 +113,58 @@ function createMenu() {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 }
+
+// File system operations for local storage
+const getDataPath = () => {
+  return path.join(app.getPath('userData'), 'invoice-data');
+};
+
+const ensureDataDirectory = async () => {
+  const dataPath = getDataPath();
+  try {
+    await fs.access(dataPath);
+  } catch (error) {
+    await fs.mkdir(dataPath, { recursive: true });
+  }
+  return dataPath;
+};
+
+// IPC handlers for file operations
+ipcMain.handle('save-data', async (event, { key, data }) => {
+  try {
+    const dataPath = await ensureDataDirectory();
+    const filePath = path.join(dataPath, `${key}.json`);
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+    return { success: true, path: filePath };
+  } catch (error) {
+    console.error('Error saving data:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('load-data', async (event, key) => {
+  try {
+    const dataPath = await ensureDataDirectory();
+    const filePath = path.join(dataPath, `${key}.json`);
+    const data = await fs.readFile(filePath, 'utf8');
+    return { success: true, data: JSON.parse(data) };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { success: true, data: null }; // File doesn't exist yet
+    }
+    console.error('Error loading data:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-data-path', async () => {
+  try {
+    const dataPath = await ensureDataDirectory();
+    return { success: true, path: dataPath };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
 
 app.whenReady().then(() => {
   createWindow();

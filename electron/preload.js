@@ -7,7 +7,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onMenuAction: (callback) => ipcRenderer.on('menu-action', callback),
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
   platform: process.platform,
-  versions: process.versions
+  versions: process.versions,
+  // File system operations
+  saveData: (key, data) => ipcRenderer.invoke('save-data', { key, data }),
+  loadData: (key) => ipcRenderer.invoke('load-data', key),
+  getDataPath: () => ipcRenderer.invoke('get-data-path')
 });
 
 // Add application info

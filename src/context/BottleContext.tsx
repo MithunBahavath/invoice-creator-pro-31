@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/use-toast';
+import { saveToStorage, loadFromStorage } from '@/utils/localStorage';
 
 export interface Bottle {
   id: string;
@@ -26,29 +27,26 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [bottles, setBottles] = useState<Bottle[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Load bottles from localStorage on component mount
+  // Load bottles from storage on component mount
   useEffect(() => {
-    try {
-      const savedBottles = localStorage.getItem('bottles');
-      if (savedBottles) {
-        const parsedBottles = JSON.parse(savedBottles);
-        if (Array.isArray(parsedBottles)) {
-          setBottles(parsedBottles);
+    const loadBottles = async () => {
+      try {
+        const savedBottles = await loadFromStorage<Bottle[]>('bottles', []);
+        if (Array.isArray(savedBottles)) {
+          setBottles(savedBottles);
         }
+      } catch (error) {
+        console.error('Error loading bottles:', error);
       }
-    } catch (error) {
-      console.error('Error loading bottles from localStorage:', error);
-    }
+    };
+    
+    loadBottles();
   }, []);
 
-  // Save bottles to localStorage whenever bottles change
+  // Save bottles to storage whenever bottles change
   useEffect(() => {
     if (bottles.length > 0) {
-      try {
-        localStorage.setItem('bottles', JSON.stringify(bottles));
-      } catch (error) {
-        console.error('Error saving bottles to localStorage:', error);
-      }
+      saveToStorage('bottles', bottles);
     }
   }, [bottles]);
 
@@ -56,11 +54,7 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (bottles.length > 0) {
-        try {
-          localStorage.setItem('bottles', JSON.stringify(bottles));
-        } catch (error) {
-          console.error('Error saving bottles on page unload:', error);
-        }
+        saveToStorage('bottles', bottles);
       }
     };
 
@@ -68,51 +62,39 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [bottles]);
 
-  const addBottle = (bottleData: Omit<Bottle, 'id'>) => {
+  const addBottle = async (bottleData: Omit<Bottle, 'id'>) => {
     const newBottle: Bottle = {
       ...bottleData,
       id: uuidv4(),
     };
     const updatedBottles = [...bottles, newBottle];
     setBottles(updatedBottles);
-    // Immediately save to localStorage
-    try {
-      localStorage.setItem('bottles', JSON.stringify(updatedBottles));
-    } catch (error) {
-      console.error('Error saving bottle to localStorage:', error);
-    }
+    // Immediately save to storage
+    await saveToStorage('bottles', updatedBottles);
     toast({
       title: 'Success',
       description: 'Bottle added successfully',
     });
   };
 
-  const updateBottle = (updatedBottle: Bottle) => {
+  const updateBottle = async (updatedBottle: Bottle) => {
     const updatedBottles = bottles.map(bottle => 
       bottle.id === updatedBottle.id ? updatedBottle : bottle
     );
     setBottles(updatedBottles);
-    // Immediately save to localStorage
-    try {
-      localStorage.setItem('bottles', JSON.stringify(updatedBottles));
-    } catch (error) {
-      console.error('Error updating bottle in localStorage:', error);
-    }
+    // Immediately save to storage
+    await saveToStorage('bottles', updatedBottles);
     toast({
       title: 'Success',
       description: 'Bottle updated successfully',
     });
   };
 
-  const deleteBottle = (id: string) => {
+  const deleteBottle = async (id: string) => {
     const updatedBottles = bottles.filter(bottle => bottle.id !== id);
     setBottles(updatedBottles);
-    // Immediately save to localStorage
-    try {
-      localStorage.setItem('bottles', JSON.stringify(updatedBottles));
-    } catch (error) {
-      console.error('Error deleting bottle from localStorage:', error);
-    }
+    // Immediately save to storage
+    await saveToStorage('bottles', updatedBottles);
     toast({
       title: 'Success',
       description: 'Bottle deleted successfully',
