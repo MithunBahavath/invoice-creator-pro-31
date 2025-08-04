@@ -151,8 +151,31 @@ export const InvoiceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Save to localStorage as backup whenever invoices change
   useEffect(() => {
-    localStorage.setItem('invoices', JSON.stringify(invoices));
+    try {
+      localStorage.setItem('invoices', JSON.stringify(invoices));
+    } catch (error) {
+      console.error('Error saving invoices to localStorage:', error);
+    }
   }, [invoices]);
+
+  // Ensure data is saved before page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        localStorage.setItem('invoices', JSON.stringify(invoices));
+        localStorage.setItem('currentInvoice', JSON.stringify(currentInvoice));
+      } catch (error) {
+        console.error('Error saving data on page unload:', error);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+    };
+  }, [invoices, currentInvoice]);
 
   // Add a new invoice
   const addInvoice = async (invoice: Invoice) => {

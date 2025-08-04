@@ -28,15 +28,44 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Load bottles from localStorage on component mount
   useEffect(() => {
-    const savedBottles = localStorage.getItem('bottles');
-    if (savedBottles) {
-      setBottles(JSON.parse(savedBottles));
+    try {
+      const savedBottles = localStorage.getItem('bottles');
+      if (savedBottles) {
+        const parsedBottles = JSON.parse(savedBottles);
+        if (Array.isArray(parsedBottles)) {
+          setBottles(parsedBottles);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading bottles from localStorage:', error);
     }
   }, []);
 
   // Save bottles to localStorage whenever bottles change
   useEffect(() => {
-    localStorage.setItem('bottles', JSON.stringify(bottles));
+    if (bottles.length > 0) {
+      try {
+        localStorage.setItem('bottles', JSON.stringify(bottles));
+      } catch (error) {
+        console.error('Error saving bottles to localStorage:', error);
+      }
+    }
+  }, [bottles]);
+
+  // Ensure data is saved before page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (bottles.length > 0) {
+        try {
+          localStorage.setItem('bottles', JSON.stringify(bottles));
+        } catch (error) {
+          console.error('Error saving bottles on page unload:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [bottles]);
 
   const addBottle = (bottleData: Omit<Bottle, 'id'>) => {
@@ -44,7 +73,14 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       ...bottleData,
       id: uuidv4(),
     };
-    setBottles([...bottles, newBottle]);
+    const updatedBottles = [...bottles, newBottle];
+    setBottles(updatedBottles);
+    // Immediately save to localStorage
+    try {
+      localStorage.setItem('bottles', JSON.stringify(updatedBottles));
+    } catch (error) {
+      console.error('Error saving bottle to localStorage:', error);
+    }
     toast({
       title: 'Success',
       description: 'Bottle added successfully',
@@ -52,9 +88,16 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const updateBottle = (updatedBottle: Bottle) => {
-    setBottles(bottles.map(bottle => 
+    const updatedBottles = bottles.map(bottle => 
       bottle.id === updatedBottle.id ? updatedBottle : bottle
-    ));
+    );
+    setBottles(updatedBottles);
+    // Immediately save to localStorage
+    try {
+      localStorage.setItem('bottles', JSON.stringify(updatedBottles));
+    } catch (error) {
+      console.error('Error updating bottle in localStorage:', error);
+    }
     toast({
       title: 'Success',
       description: 'Bottle updated successfully',
@@ -62,7 +105,14 @@ export const BottleProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const deleteBottle = (id: string) => {
-    setBottles(bottles.filter(bottle => bottle.id !== id));
+    const updatedBottles = bottles.filter(bottle => bottle.id !== id);
+    setBottles(updatedBottles);
+    // Immediately save to localStorage
+    try {
+      localStorage.setItem('bottles', JSON.stringify(updatedBottles));
+    } catch (error) {
+      console.error('Error deleting bottle from localStorage:', error);
+    }
     toast({
       title: 'Success',
       description: 'Bottle deleted successfully',
