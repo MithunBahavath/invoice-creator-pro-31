@@ -78,33 +78,20 @@ const connectToMongoDB = async () => {
 // Try to connect to MongoDB
 connectToMongoDB();
 
-// Add detailed logging middleware
+// Add logging middleware - reduced in production
 app.use((req, res, next) => {
-  const requestTime = new Date().toISOString();
-  console.log(`${req.method} ${req.path} - ${requestTime}`);
-  
-  // Log request body for POST/PUT requests
-  if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
-    if (req.path.includes('/api/')) {
-      const bodyPreview = JSON.stringify(req.body).substring(0, 200);
-      console.log(`Request body: ${bodyPreview}${bodyPreview.length >= 200 ? '...' : ''}`);
-    }
+  if (process.env.NODE_ENV !== 'production') {
+    const requestTime = new Date().toISOString();
+    console.log(`${req.method} ${req.path} - ${requestTime}`);
   }
-  
   next();
 });
 
-// Status route to check API health
+// Status route - minimal info for health checks
 app.get('/api/status', (req, res) => {
   res.json({ 
     status: 'ok',
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    env: {
-      nodeEnv: process.env.NODE_ENV,
-      mongoDbConfigured: Boolean(process.env.MONGODB_URI),
-      database: mongoose.connection.db ? mongoose.connection.db.databaseName : 'not connected',
-      ipAddress: req.ip || 'unknown'
-    }
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
@@ -118,12 +105,14 @@ app.get('/', (req, res) => {
   res.send('Invoice API is running - connected to MongoDB Atlas');
 });
 
-// Error handling middleware
+// Error handling middleware - generic errors for production
 app.use((err, req, res, next) => {
-  console.error('Server error:', err.stack);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Server error:', err.stack);
+  }
+  
   res.status(500).json({
-    error: 'Server error',
-    message: err.message
+    error: 'Internal server error'
   });
 });
 
